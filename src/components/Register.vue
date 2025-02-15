@@ -13,7 +13,7 @@
       <el-form-item prop="checkPass">
         <el-input type="password" v-model="ruleForm.checkPass" placeholder="确认密码" autocomplete="off"></el-input>
       </el-form-item>
-      <el-button type="primary" @click="submitForm('ruleFormRef')"> 
+      <el-button type="primary" @click="submitForm(ruleFormRef)">
         注册
       </el-button>
     </el-form>
@@ -24,8 +24,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import { ElForm } from 'element-plus'
+import { defineComponent, reactive, ref } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import http from '../services/http.ts';
 
 interface RuleForm {
   email: string;
@@ -37,14 +38,38 @@ interface RuleForm {
 export default defineComponent({
   name: 'Register',
   setup() {
-    const ruleForm = ref<RuleForm>({
+    const ruleFormRef = ref<FormInstance>()
+    const ruleForm = reactive<RuleForm>({
       email: '',
       userName: '',
       pass: '',
       checkPass: ''
     })
-    
-    const rules = {
+    const validPass = (rule: any, value: any, callback: any) => {
+      if (!value) {
+        callback(new Error('请输入密码'))
+      } else {
+        let pwdRegex = new RegExp('(?=.*[0-9])(?=.*[a-zA-Z]).{8,30}');
+        if (!pwdRegex.test(value)) {
+          callback(new Error('密码必须包含字母和数字，且不少于8个字符'));
+        }
+        if (ruleForm.checkPass !== '') {
+          if (!ruleFormRef.value) return
+          ruleFormRef.value.validateField('checkPass')
+        }
+        callback()
+      }
+    }
+    const checkPass = (rule: any, value: string, callback: Function) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'));
+      } else if (value !== ruleForm.pass) {
+        callback(new Error('密码不一致'));
+      } else {
+        callback();
+      }
+    }
+    const rules = reactive<FormRules<typeof ruleForm>>({
       email: [
         { required: true, message: '请输入邮箱地址', trigger: 'blur' },
         { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
@@ -53,54 +78,36 @@ export default defineComponent({
         { required: true, message: '请输入用户名', trigger: 'blur' }
       ],
       pass: [
-        { 
-          validator: (rule: any, value: string, callback: Function) => {
-            if (value === '') {
-              callback(new Error('请输入密码'));
-            } else {
-              let pwdRegex = new RegExp('(?=.*[0-9])(?=.*[a-zA-Z]).{8,30}');
-              if (!pwdRegex.test(value)) {
-                callback(new Error('密码必须包含字母和数字，且不少于8个字符'));
-              }
-              if (ruleForm.value.checkPass !== '') {
-                // Trigger validation on confirm password field when password changes
-                this.$refs.ruleFormRef.validateField('checkPass');
-              }
-            }
-            callback();
-          },
+        {
+          validator: validPass,
           trigger: 'blur'
         }
       ],
       checkPass: [
-        { 
-          validator: (rule: any, value: string, callback: Function) => {
-            if (value === '') {
-              callback(new Error('请再次输入密码'));
-            } else if (value !== ruleForm.value.pass) {
-              callback(new Error('密码不一致'));
-            } else {
-              callback();
-            }
-          },
+        {
+          validator: checkPass,
           trigger: 'blur'
         }
       ]
-    }
+    })
 
-    const submitForm = (formName: string) => {
-      const formRef = (formName === 'ruleFormRef') ? ruleForm.value : null
-      if (formRef) {
-        formRef.validate((valid: boolean) => {
+    const submitForm = (formEl: FormInstance | undefined) => {
+      if (!formEl) return
+      if (formEl) {
+        formEl.validate((valid: boolean) => {
           if (valid) {
-            const qs = require('qs');
+            // 创建 FormData 对象
+            const formData = new FormData();
+            formData.append('email', ruleForm.email);
+            formData.append('userName', ruleForm.userName);
+            formData.append('pass', ruleForm.pass);
             // Simulate registration request
-            this.axios.post('/user/register', qs.stringify(ruleForm.value))
+            http.post('/user/register', formData)
               .then((response: any) => {
                 console.log(response);
                 alert('注册成功，请登录！');
               })
-              .catch(function(error) {
+              .catch(function (error) {
                 if (error.response) {
                   console.log(error.response.data);
                   console.log(error.response.status);
@@ -114,13 +121,13 @@ export default defineComponent({
               });
           } else {
             alert('错误');
-            return false;
           }
         });
       }
     }
 
     return {
+      ruleFormRef,
       ruleForm,
       rules,
       submitForm

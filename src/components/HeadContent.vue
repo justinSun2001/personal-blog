@@ -1,81 +1,72 @@
 <template>
-<div :style="{height:200 + 'px', backgroundImage: moodColor}">
-  <!-- <el-breadcrumb separator-class="el-icon-arrow-right">
-  <el-breadcrumb-item :to="{ path: '/home' }">Home</el-breadcrumb-item>
-  <el-breadcrumb-item :to="{ path: '/articles' }">Articles</el-breadcrumb-item>
-  <el-breadcrumb-item>SC</el-breadcrumb-item>
-</el-breadcrumb> -->
-  <div class="top">
-    <div v-if = 'nochange' @click = 'showBtn'>切换背景</div>
-    <button v-if = 'change' @click = 'mood1'>暖色调</button>
-    <button v-if = 'change' @click = 'mood2'>冷色调</button>
+  <div :style="bgStyle">
+    <div class="top">
+      <div v-if="!change" @click="showBtn">切换背景</div>
+      <template v-else>
+        <button @click="setMood('warm')">暖色调</button>
+        <button @click="setMood('cool')">冷色调</button>
+      </template>
+    </div>
+    <div class="main">{{ title }}</div>
+    <div class="content">{{ text }}</div>
   </div>
-  <div class="main">{{title}}</div>
-  <div class="content">{{text}}</div>
-</div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      title:'Lifestyle',
-      text:'哎呀！出错啦',
-      moodColor:'linear-gradient(to right, blue, purple',
-      nochange: true,
-      change: false,
-    }
-  },
-  methods: {
-    showBtn(){
-      this.nochange=false;
-      this.change=true;
-    },
-    mood1() {
-      this.moodColor='linear-gradient(to right, red, orange';
-      this.change=false;
-      this.nochange=true;
-    },
-    mood2() {
-      this.moodColor='linear-gradient(to right, cyan, gray';
-      this.change=false;
-      this.nochange=true;
-    },
-  }
-}
+<script setup>
+import { ref, computed } from "vue";
+
+// 响应式数据
+const title = ref("Lifestyle");
+const text = ref("哎呀！出错啦");
+const mood = ref("cool");
+const change = ref(false);
+
+// 计算背景样式
+const bgStyle = computed(() => ({
+  height: "200px",
+  backgroundImage: mood.value === "warm"
+    ? "linear-gradient(to right, red, orange)"
+    : "linear-gradient(to right, cyan, gray)"
+}));
+
+// 切换按钮显示
+const showBtn = () => {
+  change.value = true;
+};
+
+// 切换背景
+const setMood = (type) => {
+  mood.value = type;
+  change.value = false;
+};
 </script>
 
 <style scoped>
-  .top {
-    text-align: center;
-  }
-  .top div {
-    font-size: 10px;
-  }
-  button {
-    background-color: rgb(238, 212, 212);
-    border: 0.5px solid;
-    color: black;
-    padding: 5px 12px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 10px;
-    cursor: pointer;
-  }
-  .main {
-    text-align: center;
-    color:white;
-    font-size: 20px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-  }
-  .content {
-    text-align: center;
-    padding-left: 15%;
-    padding-right: 15%;
-    color:#f7fafcd3;
-    font-size: 10px;
-  }
-
+.top {
+  text-align: center;
+}
+.top div {
+  font-size: 10px;
+  cursor: pointer;
+}
+button {
+  background-color: rgb(238, 212, 212);
+  border: 0.5px solid;
+  color: black;
+  padding: 5px 12px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.main {
+  text-align: center;
+  color: white;
+  font-size: 20px;
+  padding: 20px 0;
+}
+.content {
+  text-align: center;
+  padding: 0 15%;
+  color: #f7fafcd3;
+  font-size: 10px;
+}
 </style>

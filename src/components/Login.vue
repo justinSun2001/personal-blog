@@ -22,7 +22,7 @@ import { defineComponent, reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useStore } from 'vuex';  // 引入 useStore
 import { useRouter } from 'vue-router';  // 引入 useRouter
-import http from '../services/http';
+import http from '../services/http.ts';
 
 interface RuleForm {
   email: string;

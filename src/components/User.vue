@@ -81,12 +81,7 @@ export default defineComponent({
 
 @media screen and (min-width: 960px) {
   .page {
-    background: url('../assets/img/bg3.png');
-    /* background-repeat: no-repeat; 
-       background-size: cover;
-       -webkit-background-size: cover;
-       -o-background-size: cover;
-       background-position: center 0; */
+    background: url('@/assets/img/bg3.png');
   }
 
   .content {
@@ -121,7 +116,7 @@ export default defineComponent({
 
 @media screen and (max-width: 960px) {
   .page {
-    background: url('../assets/img/bg1.png');
+    background: url('@/assets/img/bg1.png');
     background-repeat: no-repeat;
     background-size: cover;
     -webkit-background-size: cover;
