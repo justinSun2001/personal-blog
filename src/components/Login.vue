@@ -1,13 +1,13 @@
 <template>
   <div class="r2">
-    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" class="demo-ruleForm">
+    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleFormRef" class="demo-ruleForm">
       <el-form-item prop="email">
         <el-input v-model="ruleForm.email" placeholder="邮箱/用户名"></el-input>
       </el-form-item>
       <el-form-item prop="pass">
         <el-input type="password" v-model="ruleForm.pass" placeholder="密码" autocomplete="off"></el-input>
       </el-form-item>
-      <el-button type="primary" @click="submitForm('ruleForm')"> 
+      <el-button type="primary" @click="submitForm(ruleFormRef)"> 
         登陆
       </el-button>
     </el-form>
@@ -18,8 +18,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import { ElForm } from 'element-plus'
+import { defineComponent, reactive, ref } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import { useStore } from 'vuex';  // 引入 useStore
+import { useRouter } from 'vue-router';  // 引入 useRouter
+import http from '../services/http';
 
 interface RuleForm {
   email: string;
@@ -29,58 +32,56 @@ interface RuleForm {
 export default defineComponent({
   name: 'Login',
   setup() {
-    const ruleForm = ref<RuleForm>({
+    const store = useStore();  // 使用 useStore 获取 store 实例
+    const router = useRouter();  // 使用 useRouter 获取 router 实例
+
+    const ruleFormRef = ref<FormInstance>()
+    const ruleForm = reactive<RuleForm>({
       email: '',
       pass: ''
     })
-    
-    const rules = {
-      email: [
-        { required: true, message: '请输入邮箱地址/用户名', trigger: 'blur' }
-      ],
-      pass: [
-        { 
-          validator: (rule: any, value: string, callback: Function) => {
-            if (value === '') {
-              callback(new Error('请输入密码'));
-            }
-            callback();
-          },
-          trigger: 'blur' 
-        }
-      ]
+    const validPass = (rule: any, value: any, callback: any) => {
+      if (!value) {
+        callback(new Error('Please input the password'))
+      } else {
+        callback()
+      }
     }
-
-    const submitForm = (formName: string) => {
-      const formRef = (formName === 'ruleForm') ? ruleForm.value : null; // get form reference
-      if (formRef) {
-        formRef.validate((valid: boolean) => {
+    const rules = reactive<FormRules<typeof ruleForm>>({
+      email: [{ required: true, message: '请输入邮箱地址/用户名', trigger: 'blur' }],
+      pass: [{ validator: validPass, trigger: 'blur' }]
+    })
+    const submitForm = (formEl: FormInstance | undefined) => {
+      if (!formEl) return
+      formEl.validate((valid: boolean) => {
           if (valid) {
-            const qs = require('qs');
-            if(ruleForm.value.email === 'admin' && ruleForm.value.pass === 'admin') {
+            if(ruleForm.email === 'admin' && ruleForm.pass === 'admin') {
               // Mock login
-              this.$store.commit('setUserToken', 'admin');
-              this.$router.push({ path: "/home/1" });
+              store.commit('setUserToken', 'admin');
+              router.push({ path: "/home/1" });
             }
-            this.axios.post('/user/login', qs.stringify(ruleForm.value))
+            // 创建 FormData 对象
+            const formData = new FormData();
+            formData.append('email', ruleForm.email);
+            formData.append('pass', ruleForm.pass);
+            http.post('/user/login', formData)
               .then((response: any) => {
                 console.log(response);
-                if(ruleForm.value.email === response.data.email && ruleForm.value.pass === response.data.password) {
-                  this.$store.commit('setUserToken', response.data._id);
-                  this.$router.push({ path: "/home/1" });
+                if(ruleForm.email === response.data.email && ruleForm.pass === response.data.password) {
+                  store.commit('setUserToken', response.data._id);
+                  router.push({ path: "/home/1" });
                 } else {
                   alert('密码错误');
                 }
               })
           } else {
             alert('error!!');
-            return false;
           }
         });
-      }
     }
 
     return {
+      ruleFormRef,
       ruleForm,
       rules,
       submitForm
