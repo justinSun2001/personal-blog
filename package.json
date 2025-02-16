@@ -1,27 +1,22 @@
 {
   "name": "personal-blog",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "axios": "^1.7.9",
-    "element-plus": "^2.9.4",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "vuex": "^4.0.2"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justinSun2001/personal-blog.git"
   },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/justinSun2001/personal-blog/issues"
+  },
+  "homepage": "https://github.com/justinSun2001/personal-blog#readme",
+  "description": "",
   "devDependencies": {
-    "@types/lodash": "^4.17.15",
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@vue/tsconfig": "^0.7.0",
-    "sass": "^1.85.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.1.0",
-    "vue-tsc": "^2.2.0"
+    "concurrently": "^9.1.2"
   }
 }
