@@ -67,8 +67,8 @@ export default defineComponent({
             http.post('/user/login', formData)
               .then((response: any) => {
                 console.log(response);
-                if(ruleForm.email === response.data.email && ruleForm.pass === response.data.password) {
-                  store.commit('setUserToken', response.data._id);
+                if(ruleForm.email === response.email && ruleForm.pass === response.password) {
+                  store.commit('setUserToken', response._id);
                   router.push({ path: "/home/1" });
                 } else {
                   alert('密码错误');
