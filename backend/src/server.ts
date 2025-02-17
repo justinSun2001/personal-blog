@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 // 加载环境变量
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // 导入路由
 import indexRouter from "./routes/index";
@@ -30,7 +30,11 @@ app.use(
 );
 
 // ✅ 2. MongoDB 连接优化
-const mongoDB = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/local_library";
+// 从 .env 文件中读取数据库连接配置信息
+const { DB_HOST, DB_USER, DB_PASS, DB_NAME, PORT } = process.env;
+// 构建 MongoDB 连接字符串
+const mongoDB = `mongodb://${DB_USER}:${DB_PASS}@${DB_HOST}:27017/${DB_NAME}`;
+
 mongoose
   .connect(mongoDB)
   .then(() => console.log("✅ MongoDB 连接成功"))
@@ -41,8 +45,8 @@ db.on("error", console.error.bind(console, "MongoDB 连接错误："));
 
 // ✅ 3. 基础中间件
 app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json());// 解析 JSON 数据
+app.use(express.urlencoded({ extended: true }));// 解析表单数据
 app.use(cookieParser());
 
 // ✅ 4. 托管静态文件
@@ -66,6 +70,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   res.status(err.status || 500);
   res.json({ error: err.message || "服务器内部错误" });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 export default app;
