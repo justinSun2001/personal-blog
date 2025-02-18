@@ -1,8 +1,8 @@
 <template>
-  <div class="container">
+  <div class="top_container">
     <div class="left">
       <div class="user">
-        <img src="../assets/img/user.png" />
+        <img src="../assets/img/user.png" @click="logout"/>
       </div>
     </div>
     <ul class="nav">
@@ -30,6 +30,12 @@ defineProps<{
 const router = useRouter();
 const store = useStore(); // Vuex 访问状态
 
+const logout = () => {
+  localStorage.removeItem("user");
+  store.commit("setUserToken", null);
+  router.push(`/user`);
+}
+
 const getHome = () => {
   router.push(`/home/${store.state.currentPage}`);
 };
@@ -48,12 +54,13 @@ const getAbout = () => {
 </script>
 
 <style scoped lang="scss">
-.container {
+.top_container {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   width: 100%;
   height: 54px;
-  background-color: #fff;
+  background-color: #29c0e2;
   font-size: 8px;
 }
 
@@ -95,13 +102,5 @@ a {
   &:hover {
     color: rgb(141, 138, 141);
   }
-}
-
-/* 消除列表默认样式 */
-ul,
-li {
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 </style>

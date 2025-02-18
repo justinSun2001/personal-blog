@@ -17,12 +17,12 @@ export default defineComponent({
   components: { SideContent, TopBar },
   setup() {
     // Reactive state variables
-    const amount = ref(1)
+    const amount = ref(0)
 
     // Fetch amount on mount
     const getAmount = () => {
       http.get("/catalog/data").then((result:any) => {
-        amount.value = result.data.article_count - 1
+        amount.value = result.article_count - 1
       })
     }
 

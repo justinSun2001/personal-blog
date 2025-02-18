@@ -119,6 +119,7 @@ export const article_detail_data = (req: Request, res: Response, next: NextFunct
       return next(err);
     });
 };
+
 // 文章创建表单 (GET)
 export const article_create_get = (req: Request, res: Response, next: NextFunction) => {
   Promise.all([Author.find().exec(), Genre.find().exec()])
@@ -131,45 +132,82 @@ export const article_create_get = (req: Request, res: Response, next: NextFuncti
 // 文章创建 (POST)
 export const article_create_post = (req: Request, res: Response, next: NextFunction): void => {
   upload.single("pics")(req, res, (err: any) => {
-    if (err) return next(err); // 处理上传错误
+    if (err) {
+      console.error("Upload Error:", err);
+      return next(err); // 处理文件上传错误
+    }
+
+    // 确保 req.body.genre 是一个数组
     if (!(req.body.genre instanceof Array)) {
       req.body.genre = typeof req.body.genre === "undefined" ? [] : [req.body.genre];
     }
-    body("title").trim().isLength({ min: 1 }).withMessage("Title must not be empty.").escape()(req, res, next);
-    body("author").trim().isLength({ min: 1 }).withMessage("Author must not be empty.").escape()(req, res, next);
-    body("summary").trim().isLength({ min: 1 }).withMessage("Summary must not be empty.").escape()(req, res, next);
-    body("text").trim().isLength({ min: 1 }).withMessage("Text must not be empty.").escape()(req, res, next);
-    body("date").trim().isLength({ min: 1 }).withMessage("Date must not be empty.").escape()(req, res, next);
-    body("genre.*").escape()(req, res, next);
 
-    const errors = validationResult(req);
-    const article = new Article({
-      title: req.body.title,
-      author: req.body.author,
-      summary: req.body.summary,
-      text: req.body.text,
-      date: req.body.date,
-      genre: req.body.genre,
-      path: req.file ? `/photos/${req.file.filename}` : undefined,
-    });
+    // 执行字段验证
+    const validationChain = [
+      body("title").trim().isLength({ min: 1 }).withMessage("Title must not be empty.").escape(),
+      body("author").trim().isLength({ min: 1 }).withMessage("Author must not be empty.").escape(),
+      body("summary").trim().isLength({ min: 1 }).withMessage("Summary must not be empty.").escape(),
+      body("text").trim().isLength({ min: 1 }).withMessage("Text must not be empty.").escape(),
+      body("date").trim().isLength({ min: 1 }).withMessage("Date must not be empty.").escape(),
+      body("genre.*").escape()
+    ];
 
-    if (!errors.isEmpty()) {
-      Promise.all([Author.find().exec(), Genre.find().exec()])
-        .then(([authors, genres]) => {
-          genres.forEach((genre) => {
-            if (article.genre.some((articleGenre: any) => articleGenre._id.equals(genre._id))) {
-              genre.checked = true;
-            }
+    // 同步执行验证
+    Promise.all(validationChain.map(validator => validator.run(req)))
+      .then(() => {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+          // 如果有验证错误，渲染创建文章表单并显示错误信息
+          Promise.all([Author.find().exec(), Genre.find().exec()])
+            .then(([authors, genres]) => {
+              genres.forEach((genre) => {
+                if (req.body.genre.some((articleGenre: any) => articleGenre._id.equals(genre._id))) {
+                  genre.checked = true;
+                }
+              });
+
+              console.log("Validation Errors:", errors.array());
+              return res.render("article_create_form", { title: "Create Article", authors, genres, errors: errors.array() });
+            })
+            .catch((err) => {
+              console.error("Error fetching authors or genres:", err);
+              return next(err);
+            });
+
+          return; // 确保不会继续执行后续代码
+        }
+
+        // 如果没有验证错误，创建新的文章
+        const article = new Article({
+          title: req.body.title,
+          author: req.body.author,
+          summary: req.body.summary,
+          text: req.body.text,
+          date: req.body.date,
+          genre: req.body.genre,
+          path: req.file ? `/photos/${req.file.filename}` : undefined,
+        });
+
+        // 打印即将保存的文章信息
+        console.log("Article to Save:", article);
+
+        // 保存文章并重定向到文章详情页面
+        article
+          .save()
+          .then(() => {
+            console.log("Article saved successfully, redirecting...");
+            return res.redirect(article.url); // 在这里发送重定向响应
+          })
+          .catch((err) => {
+            console.error("Error Saving Article:", err);
+            return next(err); // 如果保存出错，传递给下一个中间件处理
           });
-          res.render("article_create_form", { title: "Create Article", authors, genres, errors: errors.array() });
-        })
-        .catch(next);
-    } else {
-      article
-        .save()
-        .then(() => res.redirect(article.url))
-        .catch(next);
-    }
+      })
+      .catch((err) => {
+        console.error("Validation error:", err);
+        return next(err);
+      });
   });
 };
 

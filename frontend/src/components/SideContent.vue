@@ -28,8 +28,10 @@
       <div class="sideline"></div>
       <div class="sidetext">Recent Posts</div>
       <el-divider></el-divider>
-      <div v-for="(text, index) in recentPosts" :key="index" class="text">{{ text }}</div>
-      <el-divider></el-divider>
+      <div v-for="(text, index) in recentPosts" :key="index" class="text">
+        {{ text }}
+        <el-divider></el-divider>
+      </div>
     </div>
   </div>
 </template>
@@ -37,18 +39,25 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
+import { useStore } from "vuex";
 import http from "@/services/http";
+
+import bilibili from "@/assets/img/bilibili.png";
+import qq from "@/assets/img/qq.png";
+import github from "@/assets/img/github.png";
+import linkin from "@/assets/img/linkin.png";
+import weibo from "@/assets/img/weibo.png";
 
 interface SocialLink {
   img: string;
   link: string;
 }
 const socialLinks: SocialLink[] = [
-  { img: "@/assets/img/bilibili.png", link: "https://space.bilibili.com/613598276" },
-  { img: "@/assets/img/qq.png", link: "https://user.qzone.qq.com/2464334130/main" },
-  { img: "@/assets/img/github.png", link: "https://github.com/justinSun2001?tab=repositories" },
-  { img: "@/assets/img/linkin.png", link: "https://www.linkedin.com/in/justin-sun-744810193/" },
-  { img: "@/assets/img/weibo.png", link: "https://weibo.com/u/7707589860" }
+  { img: bilibili, link: "https://space.bilibili.com/613598276" },
+  { img: qq, link: "https://user.qzone.qq.com/2464334130/main" },
+  { img: github, link: "https://github.com/justinSun2001?tab=repositories" },
+  { img: linkin, link: "https://www.linkedin.com/in/justin-sun-744810193/" },
+  { img: weibo, link: "https://weibo.com/u/7707589860" }
 ];
 
 const formRef = ref<FormInstance>();
@@ -58,12 +67,37 @@ const rules = reactive<FormRules<typeof form>>({
 });
 
 const recentPosts = ref<string[]>([]);
-const amount = ref<number>(4);
-
+const store = useStore();
+const articleCount = store.getters.getArticleCount;
 onMounted(async () => {
   try {
-    const { data } = await http.get("/catalog/articlesData");
-    recentPosts.value = data.slice(amount.value - 4, amount.value).map((item: any) => `${item.article.genre[0].name}: ${item.article.title}`);
+    // 获取所有文章的基本数据
+    const idData = await http.get("/catalog/articlesData");  // 假设返回的是包含文章数据的数组
+     // 确保 idData 是一个数组
+     if (!Array.isArray(idData)) {
+      throw new Error("Received data is not an array");
+    }
+    // 获取最新的 3 个文章的索引
+    const latestIndexes = [
+      articleCount - 1,  // 最新的三篇文章的索引
+      articleCount - 2,
+      articleCount - 3
+    ].filter(index => index >= 0);  // 确保索引有效
+    console.log(latestIndexes);
+    // 提取文章的 ID（假设 idData 是一个文章对象数组）
+    const latestIds = latestIndexes.map(value => idData[value]._id); // 通过索引获取每篇文章的 _id
+
+    // 执行请求并获取文章数据
+    const articleRequests = latestIds.map(id =>
+      http.get(`/catalog/articlesData/${id}`) // 根据文章 ID 获取详细信息
+    );
+
+    // 等待所有请求完成
+    const data = await Promise.all(articleRequests);
+    // 处理获取到的数据并更新 recentPosts
+    recentPosts.value = data.map((item: any) => {
+      return `${item.article.genre[0].name}: ${item.article.title}`;  // 假设返回的数据是 article
+    });
   } catch (error) {
     console.error("Error fetching articles:", error);
   }

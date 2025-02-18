@@ -12,7 +12,7 @@
 import { defineComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import TopBar from '@/components/TopBar.vue'
-import ArticlesContent from './ArticlesContent.vue'
+import ArticlesContent from '@/components/ArticlesContent.vue'
 
 export default defineComponent({
   name: 'ArticlePage',

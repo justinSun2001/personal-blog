@@ -1,7 +1,5 @@
 <template>
-  <div class="footer">
-    @COPYRIGHT-JUSTIN
-  </div>
+  @COPYRIGHT-JUSTIN
 </template>
 
 <script lang="ts">
@@ -13,11 +11,5 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-.footer {
-  position: absolute;
-  text-align: center;
-  font-size: 10px;
-  width: 100%;
-  line-height: 40px;
-}
+
 </style>

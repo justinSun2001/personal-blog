@@ -31,8 +31,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import Login from './Login.vue'
-import Register from './Register.vue'
+import Login from '@/components/Login.vue'
+import Register from '@/components/Register.vue'
 
 export default defineComponent({
   name: 'User',

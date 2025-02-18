@@ -7,7 +7,7 @@
       <el-form-item prop="pass">
         <el-input type="password" v-model="ruleForm.pass" placeholder="密码" autocomplete="off"></el-input>
       </el-form-item>
-      <el-button type="primary" @click="submitForm(ruleFormRef)"> 
+      <el-button type="primary" @click="submitForm(ruleFormRef)">
         登陆
       </el-button>
     </el-form>
@@ -22,7 +22,10 @@ import { defineComponent, reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useStore } from 'vuex';  // 引入 useStore
 import { useRouter } from 'vue-router';  // 引入 useRouter
-import http from '../services/http.ts';
+import { encryptParam } from '@/common/encrypt.ts';
+import { login } from '@/services/login';
+import type { AxiosResponse } from 'axios';
+import { ElMessage } from 'element-plus'
 
 interface RuleForm {
   email: string;
@@ -51,33 +54,52 @@ export default defineComponent({
       email: [{ required: true, message: '请输入邮箱地址/用户名', trigger: 'blur' }],
       pass: [{ validator: validPass, trigger: 'blur' }]
     })
+    const isEmail = (input: string) => {
+      // Check if the input looks like an email address
+      const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+      return regex.test(input);
+    }
+
+    const onFinish = async (values: any) => {
+      const encrypted = await encryptParam(values);
+      const response: AxiosResponse = await login({ encrypted });
+      const data = response.data;
+      if (data.success == false){
+        ElMessage.error(data.err);
+        return;
+      }else{
+        ElMessage.success('登录成功');
+        store.commit('setUserToken', data.token); // 将token存储到vuex中
+        if(values.email){
+          localStorage.setItem('user', values.email); // 用于和token中携带的name比较判断用户登录状态
+        } else{
+          localStorage.setItem('user', values.username); // 用于和token中携带的name比较判断用户登录状态
+        }
+        router.push('/home');
+      }
+    }
     const submitForm = (formEl: FormInstance | undefined) => {
       if (!formEl) return
       formEl.validate((valid: boolean) => {
-          if (valid) {
-            if(ruleForm.email === 'admin' && ruleForm.pass === 'admin') {
-              // Mock login
-              store.commit('setUserToken', 'admin');
-              router.push({ path: "/home/1" });
-            }
-            // 创建 FormData 对象
-            const formData = new FormData();
-            formData.append('email', ruleForm.email);
-            formData.append('pass', ruleForm.pass);
-            http.post('/user/login', formData)
-              .then((response: any) => {
-                console.log(response);
-                if(ruleForm.email === response.email && ruleForm.pass === response.password) {
-                  store.commit('setUserToken', response._id);
-                  router.push({ path: "/home/1" });
-                } else {
-                  alert('密码错误');
-                }
-              })
+        if (valid) {
+          let values = {}
+          if (isEmail(ruleForm.email)) {
+            values = {
+              email: ruleForm.email,
+              pass: ruleForm.pass
+            };
           } else {
-            alert('error!!');
+            values = {
+              username: ruleForm.email,
+              pass: ruleForm.pass
+            };
           }
-        });
+
+          onFinish(values);
+        } else {
+          ElMessage.error('输入格式不正确');
+        }
+      });
     }
 
     return {

@@ -15,6 +15,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 import indexRouter from "./routes/index";
 import userRouter from "./routes/user";
 import catalogRouter from "./routes/catalog";
+import { authenticateToken } from "./jwt";
 
 // 初始化 Express
 const app = express();
@@ -48,7 +49,6 @@ app.use(logger("dev"));
 app.use(express.json());// 解析 JSON 数据
 app.use(express.urlencoded({ extended: true }));// 解析表单数据
 app.use(cookieParser());
-
 // ✅ 4. 托管静态文件
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -59,7 +59,7 @@ app.set("view engine", "pug");
 // ✅ 6. 使用路由
 app.use("/", indexRouter);
 app.use("/user", userRouter);
-app.use("/catalog", catalogRouter);
+app.use("/catalog", authenticateToken, catalogRouter);
 
 // ✅ 7. 处理 404 错误
 app.use((req: Request, res: Response, next: NextFunction) => {

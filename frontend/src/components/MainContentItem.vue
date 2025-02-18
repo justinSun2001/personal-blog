@@ -41,11 +41,11 @@ export default defineComponent({
     const fetchArticleData = () => {
       http.get('/catalog/articlesData')
         .then((result:any) => {
-          const article = result.data[props.index];
+          const article = result[props.index];
           id.value = article._id;
           http.get(`/catalog/articlesData/${id.value}`)
             .then((res:any) => {
-              const articleData = res.data.article;
+              const articleData = res.article;
               title.value = articleData.title;
               message.value = articleData.summary;
               date.value = articleData.date;

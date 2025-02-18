@@ -21,6 +21,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import http from '@/services/http'
 
 export default defineComponent({
@@ -41,12 +42,13 @@ export default defineComponent({
     const items = ref<string[]>([])
 
     const router = useRouter()
+    const store = useStore()
 
     // Method to fetch articles
     const fetchData = () => {
       // Fetch total article count
-      http.get("/catalog/data").then((result:any) => {
-        total.value = result.data.article_count
+     
+        total.value = store.state.articleCount
         start.value = total.value - (props.currentPage * pageSize.value) > 0
           ? total.value - (props.currentPage * pageSize.value) - 1
           : 0
@@ -55,13 +57,12 @@ export default defineComponent({
         // Fetch articles data
         for (let i = total.value - 1; i >= 0; i--) {
           http.get("/catalog/articlesData").then((res:any) => {
-            items.value[i] = res.data[i]._id
+            items.value[i] = res[i]._id
             http.get(`/catalog/articlesData/${items.value[i]}`).then((result:any) => {
-              message.value[i] = result.data.article.summary
+              message.value[i] = result.article.summary
             })
           })
         }
-      })
     }
 
     // Fetch data on component mount

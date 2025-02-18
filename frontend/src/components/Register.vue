@@ -4,8 +4,8 @@
       <el-form-item prop="email">
         <el-input v-model="ruleForm.email" placeholder="邮箱"></el-input>
       </el-form-item>
-      <el-form-item prop="userName">
-        <el-input v-model="ruleForm.userName" placeholder="用户名"></el-input>
+      <el-form-item prop="username">
+        <el-input v-model="ruleForm.username" placeholder="用户名"></el-input>
       </el-form-item>
       <el-form-item prop="pass">
         <el-input type="password" v-model="ruleForm.pass" placeholder="密码" autocomplete="off"></el-input>
@@ -30,7 +30,7 @@ import http from '../services/http.ts';
 
 interface RuleForm {
   email: string;
-  userName: string;
+  username: string;
   pass: string;
   checkPass: string;
 }
@@ -41,7 +41,7 @@ export default defineComponent({
     const ruleFormRef = ref<FormInstance>()
     const ruleForm = reactive<RuleForm>({
       email: '',
-      userName: '',
+      username: '',
       pass: '',
       checkPass: ''
     })
@@ -74,7 +74,7 @@ export default defineComponent({
         { required: true, message: '请输入邮箱地址', trigger: 'blur' },
         { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
       ],
-      userName: [
+      username: [
         { required: true, message: '请输入用户名', trigger: 'blur' }
       ],
       pass: [
@@ -99,7 +99,7 @@ export default defineComponent({
             // 创建 FormData 对象
             const formData = new FormData();
             formData.append('email', ruleForm.email);
-            formData.append('userName', ruleForm.userName);
+            formData.append('username', ruleForm.username);
             formData.append('pass', ruleForm.pass);
             // Simulate registration request
             http.post('/user/register', formData)

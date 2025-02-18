@@ -13,7 +13,7 @@
       <div class="markdown-body" v-html="renderedMarkdown"></div>
     </div>
     <div class="side">
-      <side-content :amount="amount"></side-content>
+      <SideContent></SideContent>
     </div>
   </div>
 </template>
@@ -37,15 +37,14 @@ export default defineComponent({
     const message = ref('');
     const date = ref('');
     const text = ref('');
-    const amount = ref(1);
 
     const fetchData = () => {
-      const id = route.params.id;
-      http.get(`/catalog/articlesData/${id}`).then((result:any) => {
-        title.value = result.data.article.title;
-        message.value = result.data.article.summary;
-        date.value = result.data.article.date;
-        text.value = result.data.article.text;
+      const _id = route.params.id;
+      http.get(`/catalog/articlesData/${_id}`).then((result:any) => {
+        title.value = result.article.title;
+        message.value = result.article.summary;
+        date.value = result.article.date;
+        text.value = result.article.text;
       });
     };
     
@@ -53,10 +52,6 @@ export default defineComponent({
 
     onMounted(() => {
       fetchData();
-
-      http.get('/catalog/data').then((result:any) => {
-        amount.value = result.data.article_count - 1;
-      });
 
       const link = document.createElement('link');
       link.type = 'text/css';
@@ -74,7 +69,6 @@ export default defineComponent({
       message,
       date,
       text,
-      amount,
       renderedMarkdown
     };
   },
@@ -130,5 +124,5 @@ export default defineComponent({
   margin-bottom: 25px;
 }
 
-@import '../assets/markdown.css';
+@import '@/assets/styles/markdown.css';
 </style>
