@@ -1,28 +1,23 @@
 <template>
-  <div class="r2">
-    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleFormRef" class="demo-ruleForm">
-      <el-form-item prop="email">
-        <el-input v-model="ruleForm.email" placeholder="邮箱/用户名"></el-input>
-      </el-form-item>
-      <el-form-item prop="pass">
-        <el-input type="password" v-model="ruleForm.pass" placeholder="密码" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-button type="primary" @click="submitForm(ruleFormRef)">
-        登陆
-      </el-button>
-    </el-form>
-  </div>
-  <div class="r3">
-    <a href="#">忘记密码？</a>
-  </div>
+  <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleFormRef" class="demo-ruleForm">
+    <el-form-item prop="email">
+      <el-input v-model="ruleForm.email" placeholder="邮箱/用户名"></el-input>
+    </el-form-item>
+    <el-form-item prop="pass">
+      <el-input type="password" v-model="ruleForm.pass" placeholder="密码" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-button type="primary" @click="submitForm(ruleFormRef)">
+      登陆
+    </el-button>
+  </el-form>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { useStore } from 'vuex';  // 引入 useStore
 import { useRouter } from 'vue-router';  // 引入 useRouter
 import { encryptParam } from '@/common/encrypt.ts';
+import { setRefreshTokenInLocal, setTokenInLocal } from '@/common/keyAndToken.ts';
 import { login } from '@/services/login';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus'
@@ -35,17 +30,16 @@ interface RuleForm {
 export default defineComponent({
   name: 'Login',
   setup() {
-    const store = useStore();  // 使用 useStore 获取 store 实例
     const router = useRouter();  // 使用 useRouter 获取 router 实例
 
     const ruleFormRef = ref<FormInstance>()
     const ruleForm = reactive<RuleForm>({
-      email: '',
+      email: localStorage.getItem('user') || '',
       pass: ''
     })
     const validPass = (rule: any, value: any, callback: any) => {
       if (!value) {
-        callback(new Error('Please input the password'))
+        callback(new Error('请输入密码'))
       } else {
         callback()
       }
@@ -64,15 +58,17 @@ export default defineComponent({
       const encrypted = await encryptParam(values);
       const response: AxiosResponse = await login({ encrypted });
       const data = response.data;
-      if (data.success == false){
+      console.log(response);
+      if (data.success == false) {
         ElMessage.error(data.err);
         return;
-      }else{
+      } else {
         ElMessage.success('登录成功');
-        store.commit('setUserToken', data.token); // 将token存储到vuex中
-        if(values.email){
+        setTokenInLocal(data.token); // 将token存储到localStorage中
+        setRefreshTokenInLocal(data.refreshToken); // 将refreshToken存储到localStorage中
+        if (values.email) {
           localStorage.setItem('user', values.email); // 用于和token中携带的name比较判断用户登录状态
-        } else{
+        } else {
           localStorage.setItem('user', values.username); // 用于和token中携带的name比较判断用户登录状态
         }
         router.push('/home');
@@ -123,16 +119,5 @@ export default defineComponent({
   margin-left: 10%;
   margin-right: 10%;
   margin-bottom: 18px;
-}
-
-.r3 {
-  padding-left: 5%;
-  padding-top: 10%;
-}
-
-a {
-  text-decoration: none;
-  color: coral;
-  font-size: 8px;
 }
 </style>

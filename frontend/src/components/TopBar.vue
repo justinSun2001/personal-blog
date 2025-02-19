@@ -32,7 +32,8 @@ const store = useStore(); // Vuex 访问状态
 
 const logout = () => {
   localStorage.removeItem("user");
-  store.commit("setUserToken", null);
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
   router.push(`/user`);
 }
 
@@ -45,11 +46,11 @@ const getArticles = () => {
 };
 
 const getNbadata = () => {
-  router.push(`/nbadata/${store.state.userToken}`);
+  router.push(`/nbadata/`);
 };
 
 const getAbout = () => {
-  router.push(`/about/${store.state.userToken}`);
+  router.push(`/about/`);
 };
 </script>
 
@@ -61,7 +62,7 @@ const getAbout = () => {
   width: 100%;
   height: 54px;
   background-color: #29c0e2;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .left {
@@ -82,7 +83,7 @@ const getAbout = () => {
 .nav {
   display: flex;
   justify-content: flex-start;
-
+  margin-right: 10px;
   li {
     line-height: 54px;
     padding: 0px 10px;

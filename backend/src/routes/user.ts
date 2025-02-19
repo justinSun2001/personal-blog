@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { user_register, user_login, user_list, get_pubkey } from '../controllers/userController';
+import { user_register, user_login, user_list, get_pubkey, refresh_token } from '../controllers/userController';
+import { authenticateRefreshToken } from '../jwt';
 import multer from "multer";
 
 const router = express.Router();
@@ -23,7 +24,9 @@ router.get('/', (req: Request, res: Response, next: NextFunction) => {
 router.get('/pubkey', (req: Request, res: Response, next: NextFunction) => {
   get_pubkey(req, res, next);
 })
-
+router.get('/refreshToken', authenticateRefreshToken, (req: Request, res: Response, next: NextFunction) => {
+  refresh_token(req, res, next);
+})
 
 
 export default router;

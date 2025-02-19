@@ -37,9 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
-import type { FormInstance, FormRules } from "element-plus";
+import { ref, reactive } from "vue";
 import { useStore } from "vuex";
+import type { FormInstance, FormRules } from "element-plus";
 import http from "@/services/http";
 
 import bilibili from "@/assets/img/bilibili.png";
@@ -68,40 +68,10 @@ const rules = reactive<FormRules<typeof form>>({
 
 const recentPosts = ref<string[]>([]);
 const store = useStore();
-const articleCount = store.getters.getArticleCount;
-onMounted(async () => {
-  try {
-    // 获取所有文章的基本数据
-    const idData = await http.get("/catalog/articlesData");  // 假设返回的是包含文章数据的数组
-     // 确保 idData 是一个数组
-     if (!Array.isArray(idData)) {
-      throw new Error("Received data is not an array");
-    }
-    // 获取最新的 3 个文章的索引
-    const latestIndexes = [
-      articleCount - 1,  // 最新的三篇文章的索引
-      articleCount - 2,
-      articleCount - 3
-    ].filter(index => index >= 0);  // 确保索引有效
-    console.log(latestIndexes);
-    // 提取文章的 ID（假设 idData 是一个文章对象数组）
-    const latestIds = latestIndexes.map(value => idData[value]._id); // 通过索引获取每篇文章的 _id
-
-    // 执行请求并获取文章数据
-    const articleRequests = latestIds.map(id =>
-      http.get(`/catalog/articlesData/${id}`) // 根据文章 ID 获取详细信息
-    );
-
-    // 等待所有请求完成
-    const data = await Promise.all(articleRequests);
-    // 处理获取到的数据并更新 recentPosts
-    recentPosts.value = data.map((item: any) => {
-      return `${item.article.genre[0].name}: ${item.article.title}`;  // 假设返回的数据是 article
+const data = store.getters.getArticleData;
+recentPosts.value = data.map((item: any) => {
+      return `${item.genre[0].name}: ${item.title}`;  // 假设返回的数据是 article
     });
-  } catch (error) {
-    console.error("Error fetching articles:", error);
-  }
-});
 
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
@@ -124,6 +94,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
 .side {
   display: flex;
   flex-direction: column;
+  margin: 0 10px;
 }
 
 .side1, .side2, .side3 {
@@ -134,6 +105,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   width: 3px;
   height: 15px;
   background-color: rgb(64, 158, 149);
+  margin-left: 8px;
 }
 
 .sidetext {

@@ -18,9 +18,14 @@ const secret: string = getPrivateKeyPem(); // 你的密钥
 
 // 设置 token 过期时间
 const options: jwt.SignOptions = {
-  expiresIn: '10s', // 可以是数字（单位为秒）或字符串（如 '2 hours'、'1d' 等）
+  expiresIn: '30s', // 可以是数字（单位为秒）或字符串（如 '2 hours'、'1d' 等）
   algorithm: 'RS256', // 使用 RS256 非对称加密进行签名
 };
+// 无感刷新token所以来的token
+const refreshOptions: jwt.SignOptions = { 
+  expiresIn: '10d',      
+  algorithm: 'RS256'     
+}  
 
 // 生成并签发 JWT 令牌
 function generateToken(user: User): string {
@@ -28,7 +33,11 @@ function generateToken(user: User): string {
   const payload = 'username' in user ? { username: user.username } : { email: user.email };
   return jwt.sign(payload, secret, options);
 }
-
+// 签发无感刷新使用的token
+function generateReFreshToken(user: User): string  {
+  const payload = 'username' in user ? { username: user.username } : { email: user.email };
+  return jwt.sign(payload, secret, refreshOptions);
+}
 // 中间件，校验 token
 function authenticateToken(req: Request, res: Response, next: NextFunction): void {
   // 登录和获取公钥不校验 token
@@ -54,5 +63,23 @@ function authenticateToken(req: Request, res: Response, next: NextFunction): voi
     return 
   }
 }
+// 自定义的中间件用于验证 refresh token
+function authenticateRefreshToken(req: Request, res: Response, next: NextFunction): void {
+  const authHeader = req.headers['authorization'];  // 获取请求头中的授权信息
+  if (authHeader) {
+    const refreshToken = authHeader.split(' ')[1];  // 获取 Bearer 后面的 refresh token
 
-export { generateToken, authenticateToken };
+    try {
+      // 使用 refresh token 验证用户信息
+      const decoded = jwt.verify(refreshToken, secret);  // 使用与 refresh token 相关的密钥进行验证
+      req.user = decoded as User;  // 将解码后的用户信息保存到 req.user 上
+      next();  // 验证通过后继续处理请求
+    } catch (err) {
+      res.status(401).json({ message: 'Unauthorized: Invalid refresh token.' });
+    }
+  } else {
+    res.status(401).json({ message: 'Unauthorized: No refresh token provided.' });
+  }
+}
+
+export { generateToken, authenticateToken, generateReFreshToken, authenticateRefreshToken };

@@ -6,11 +6,11 @@
     </div>
 
     <div class="item-container">
-      <div class="item-title">{{ title }}</div>
-      <div class="item-text">{{ message }}</div>
+      <div class="item-title">{{ data1.title }}</div>
+      <div class="item-text">{{ data1.message }}</div>
       <div class="state">
         <div class="item-bottom"></div>
-        <div class="item-date">{{ date }}</div>
+        <div class="item-date">{{ data1.date }}</div>
       </div>
     </div>
   </div>
@@ -18,63 +18,30 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watchEffect } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import http from '../services/http';
 export default defineComponent({
   name: 'MainContentItem',
   props: {
-    index: {
-      type: Number,
+    data1: {
+      type: Object,
       required: true,
-    },
+    }
   },
   setup(props) {
+    console.log(props.data1);
     const router = useRouter();
-
-    const title = ref('无');
-    const message = ref('');
-    const date = ref('');
-    const url = ref('');
-    const id = ref('');
-
-    const fetchArticleData = () => {
-      http.get('/catalog/articlesData')
-        .then((result:any) => {
-          const article = result[props.index];
-          id.value = article._id;
-          http.get(`/catalog/articlesData/${id.value}`)
-            .then((res:any) => {
-              const articleData = res.article;
-              title.value = articleData.title;
-              message.value = articleData.summary;
-              date.value = articleData.date;
-              url.value = `http://localhost:3000${articleData.path}`;
-            });
-        });
-    };
-
-    onMounted(fetchArticleData); // Fetch data when the component is mounted
-
-    // Watch for index changes and refetch data if necessary
-    watchEffect(() => {
-      if (props.index >= 0) {
-        fetchArticleData();
-      }
-    });
-
+    let url = ref('');
+    url = props.data1.url;
     const imgClick = () => {
-      if (id.value) {
+      if (props.data1.id) {
         router.push({
-          path: `/articles/${id.value}`,
+          path: `/articles/${props.data1.id}`,
         });
       }
     };
 
     return {
-      title,
-      message,
-      date,
       url,
       imgClick,
     };

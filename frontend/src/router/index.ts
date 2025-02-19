@@ -64,7 +64,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // If the route is not '/user' and the user is not authenticated, redirect to '/user'
   const isAuthenticated = !!localStorage.getItem('user');  // Example: check if the 'user' exists in localStorage
-
+  
   if (to.path !== '/user'  && !isAuthenticated) {
     // If not authenticated, redirect to '/user'
     next('/user');
@@ -73,5 +73,7 @@ router.beforeEach((to, from, next) => {
     next();
   }
 })
+
+
 
 export default router

@@ -22,7 +22,7 @@
 import { defineComponent, ref, computed, onMounted, onUpdated } from 'vue';
 import { useRoute } from 'vue-router';
 import http from '@/services/http';
-import SideContent from './SideContent.vue';
+import SideContent from '@/components/SideContent.vue';
 import MarkdownIt from 'markdown-it'
 
 

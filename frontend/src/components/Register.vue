@@ -1,32 +1,28 @@
 <template>
-  <div class="r2">
-    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleFormRef" class="demo-ruleForm">
-      <el-form-item prop="email">
-        <el-input v-model="ruleForm.email" placeholder="邮箱"></el-input>
-      </el-form-item>
-      <el-form-item prop="username">
-        <el-input v-model="ruleForm.username" placeholder="用户名"></el-input>
-      </el-form-item>
-      <el-form-item prop="pass">
-        <el-input type="password" v-model="ruleForm.pass" placeholder="密码" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item prop="checkPass">
-        <el-input type="password" v-model="ruleForm.checkPass" placeholder="确认密码" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-button type="primary" @click="submitForm(ruleFormRef)">
-        注册
-      </el-button>
-    </el-form>
-  </div>
-  <div class="r3">
-    <a href="#">忘记密码？</a>
-  </div>
+  <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleFormRef" class="demo-ruleForm">
+    <el-form-item prop="email">
+      <el-input v-model="ruleForm.email" placeholder="邮箱"></el-input>
+    </el-form-item>
+    <el-form-item prop="username">
+      <el-input v-model="ruleForm.username" placeholder="用户名"></el-input>
+    </el-form-item>
+    <el-form-item prop="pass">
+      <el-input type="password" v-model="ruleForm.pass" placeholder="密码" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item prop="checkPass">
+      <el-input type="password" v-model="ruleForm.checkPass" placeholder="确认密码" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-button type="primary" @click="submitForm(ruleFormRef)">
+      注册
+    </el-button>
+  </el-form>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import http from '../services/http.ts';
+import { ElMessage } from 'element-plus'
 
 interface RuleForm {
   email: string;
@@ -37,7 +33,7 @@ interface RuleForm {
 
 export default defineComponent({
   name: 'Register',
-  setup() {
+  setup(props, { emit }) {  // 这里通过 destructuring 获取 emit
     const ruleFormRef = ref<FormInstance>()
     const ruleForm = reactive<RuleForm>({
       email: '',
@@ -104,23 +100,14 @@ export default defineComponent({
             // Simulate registration request
             http.post('/user/register', formData)
               .then((response: any) => {
-                console.log(response);
-                alert('注册成功，请登录！');
+                ElMessage.success('注册成功，请登录!');
+                emit('changeActive');
               })
               .catch(function (error) {
-                if (error.response) {
-                  console.log(error.response.data);
-                  console.log(error.response.status);
-                  console.log(error.response.headers);
-                  alert('该邮箱已被注册');
-                } else if (error.request) {
-                  console.log(error.request);
-                } else {
-                  console.log('Error', error.message);
-                }
+                ElMessage.error(error.response.data.message);
               });
           } else {
-            alert('错误');
+            ElMessage.error("输入表单数据有误，请检查");
           }
         });
       }
@@ -147,16 +134,5 @@ export default defineComponent({
   margin-left: 10%;
   margin-right: 10%;
   margin-bottom: 18px;
-}
-
-.r3 {
-  padding-left: 5%;
-  padding-top: 10%;
-}
-
-a {
-  text-decoration: none;
-  color: coral;
-  font-size: 8px;
 }
 </style>
