@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useStore } from "vuex";
 import http from "@/services/http";
 
@@ -33,14 +33,14 @@ import BottomContent from "@/components/BottomContent.vue";
 const store = useStore();
 // 标记数据是否加载完成
 const dataLoaded = ref(false);
-// 计算属性
-const currentPage = store.getters.getCurrentPage;
 
 // 请求数据
 const fetchArticles = async () => {
+  dataLoaded.value = false;
   try {
     const result: any = await http.get('/catalog/articlesData');
     const articleCount = store.state.articleCount;
+    const currentPage = store.getters.getCurrentPage;
     console.log("文章总数", articleCount);
     console.log("当前页", currentPage);
 
@@ -84,10 +84,37 @@ const fetchArticles = async () => {
     // 一旦所有请求都完成，将结果存储到 articleData 数组中
     const articleData= articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
     store.commit("setArticleData", articleData);
+
+    // 如果是第一页数据，存储到 Vuex
+    if (currentPage === 1 && !store.state.recentArticles.length) {
+      console.log("第一页数据")
+      store.commit("setRecentArticles", articleData);
+    }
+
   } catch (err) {
     console.error("获取文章数据失败", err);
   }
 };
+
+watch(
+  [() => store.getters.getCurrentPage, () => store.getters.getArticleCount], // 监听 currentPage 和 articleCount
+  ([newPage, newCount], [oldPage, oldCount]) => {
+    // 监听 currentPage 变化
+    if (newPage !== oldPage) {
+      console.log("currentPage 变化了", oldPage, "=>", newPage);
+      fetchArticles().then(() => {
+        dataLoaded.value = true;
+      });
+    }
+
+    // 监听 articleCount 变化
+    if (newCount !== oldCount) {
+      console.log("articleCount 变化了", oldCount, "=>", newCount);
+      store.commit("setRecentArticles", []); // 清空最近文章
+    }
+  },
+  { deep: true }
+);
 
 
 // 生命周期钩子

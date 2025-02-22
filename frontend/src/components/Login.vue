@@ -37,7 +37,7 @@ export default defineComponent({
       email: localStorage.getItem('user') || '',
       pass: ''
     })
-    const validPass = (rule: any, value: any, callback: any) => {
+    const validPass = (_: any, value: any, callback: any) => {
       if (!value) {
         callback(new Error('请输入密码'))
       } else {

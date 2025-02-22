@@ -10,6 +10,7 @@ interface State {
   authorCount: number;
   genreCount: number;
   articleData: object[];  // 这里的类型根据实际需求调整
+  recentArticles: object[];  // 最近文章列表
 }
 
 // 创建 Vuex Store
@@ -21,6 +22,7 @@ const store = createStore<State>({
     authorCount: 0,
     genreCount: 0,
     articleData: [],  // 初始化为空数组
+    recentArticles: [],  // 最近文章列表
   },
   getters: {
     // Getters 需要指定返回值的类型
@@ -28,6 +30,7 @@ const store = createStore<State>({
     getCurrentPage1: (state: State) => state.currentPage1,
     getArticleCount: (state: State) => state.articleCount,
     getArticleData: (state: State) => state.articleData,  // 获取文章数据的 getter
+    getRecentArticles: (state: State) => state.recentArticles,  // 获取最近文章列表的 getter
   },
   mutations: {
     // Mutations 需要指定 state 的类型
@@ -49,6 +52,9 @@ const store = createStore<State>({
     setArticleData(state: State, articleData: object[]) {
       state.articleData = articleData;  // 更新文章数据
     },
+    setRecentArticles(state: State, recentArticles: object[]) {
+      state.recentArticles = recentArticles;  // 更新最近文章列表
+    }
   },
   actions: {
     // 异步操作，获取文章数据并更新到 state
@@ -60,14 +66,6 @@ const store = createStore<State>({
         commit('setGenreCount', result.genre_count);
       } catch (error) {
         console.error('Error fetching data:', error);
-      }
-    },
-    async fetchArticleData({ commit }) {
-      try {
-        const result: any = await http.get('/catalog/articlesData');
-        commit('setArticleData', result);  // 更新文章数据
-      } catch (error) {
-        console.error('Error fetching article data:', error);
       }
     },
   },

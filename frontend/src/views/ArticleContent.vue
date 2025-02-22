@@ -1,4 +1,5 @@
 <template>
+  <TopBar />
   <div class="page">
     <div class="main">
       <div class="title">
@@ -24,11 +25,12 @@ import { useRoute } from 'vue-router';
 import http from '@/services/http';
 import SideContent from '@/components/SideContent.vue';
 import MarkdownIt from 'markdown-it'
+import TopBar from '@/components/TopBar.vue';
 
 
 export default defineComponent({
   name: 'ArticleContent',
-  components: { SideContent },
+  components: { SideContent , TopBar },
   setup() {
     const route = useRoute();
     const md = new MarkdownIt();

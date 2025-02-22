@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, computed } from "vue";
 import { useStore } from "vuex";
 import type { FormInstance, FormRules } from "element-plus";
 import http from "@/services/http";
@@ -68,8 +68,12 @@ const rules = reactive<FormRules<typeof form>>({
 
 const recentPosts = ref<string[]>([]);
 const store = useStore();
-const data = store.getters.getArticleData;
-recentPosts.value = data.map((item: any) => {
+const data = computed(() => store.getters.getRecentArticles);
+recentPosts.value = data.value.map((item: any) => {
+      if (item.genre.length > 1) {
+        const genreNames = item.genre.map((genre: any) => genre.name).join("/");
+        return `${genreNames}: ${item.title}`;
+      }
       return `${item.genre[0].name}: ${item.title}`;  // 假设返回的数据是 article
     });
 

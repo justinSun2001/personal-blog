@@ -92,9 +92,18 @@ export const user_list = (req: Request, res: Response, next: NextFunction): void
   User.find()
     .lean() // 避免 Mongoose Document 类型问题
     .exec()
-    .then((user_list: IUser[]) => res.json(user_list))
+    .then((user_list: IUser[]) => res.send(user_list))
     .catch((err) => next(err));
 };
+// callback 模式获取所有用户
+// export const user_list = (req: Request, res: Response, next: NextFunction): void => {
+//   const callback = req.query.callback; // 获取回调函数名
+//   User.find()
+//     .lean() // 避免 Mongoose Document 类型问题
+//     .exec()
+//     .then((user_list: IUser[]) => res.send(`${callback}(${JSON.stringify(user_list)})`))
+//     .catch((err) => next(err));
+// };
 
 export const get_pubkey = (req: Request, res: Response, next: NextFunction): void => {
   res.set('Content-Type', 'application/x-pem-file');

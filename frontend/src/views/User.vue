@@ -27,10 +27,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import Login from '@/components/Login.vue';
-import Register from '@/components/Register.vue';
-
+import { defineComponent, ref, defineAsyncComponent } from 'vue';
+const Login = defineAsyncComponent(() => import('@/components/Login.vue'));
+const Register = defineAsyncComponent(() => import('@/components/Register.vue'));
 export default defineComponent({
   name: 'User',
   components: {

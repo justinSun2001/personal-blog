@@ -10,7 +10,7 @@ export default defineComponent({
 })
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 body {
   margin: 0;
   /* 去除 body 默认样式 */

@@ -38,7 +38,7 @@ const logout = () => {
 }
 
 const getHome = () => {
-  router.push(`/home/${store.state.currentPage}`);
+  router.push(`/home`);
 };
 
 const getArticles = () => {

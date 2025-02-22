@@ -5,17 +5,15 @@
     <main-content-item v-if="exist3" :data1="articleData[2] ? articleData[2] : {}"></main-content-item>
     <div class="pageIndex">
       <el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange"
-        :current-page="currentPage" :page-size="1" :pager-count="1" :total="totalPage" />
+      v-model:current-page="currentPage" :page-size="3" :pager-count="10" :total="totalPage" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import MainContentItem from './MainContentItem.vue';
 import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
-
 export default defineComponent({
   name: 'MainContent',
   components: {
@@ -23,10 +21,9 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
-    const router = useRouter();
-    const currentPage = ref(store.getters.getCurrentPage);
-    const totalPage = ref(Math.ceil(store.getters.getArticleCount / 3));
-    console.log(totalPage.value);
+    const currentPage = ref(store.getters.getCurrentPage);  // 从 store 中获取当前页初始值
+    const totalPage = computed(() => store.getters.getArticleCount);
+
     const exist1 = ref(false);
     const exist2 = ref(false);
     const exist3 = ref(false);
@@ -34,15 +31,12 @@ export default defineComponent({
     exist1.value = articleData.value.length > 0;
     exist2.value = articleData.value.length > 1;
     exist3.value = articleData.value.length > 2;
-    console.log(exist1.value);
-    console.log(exist2.value);
-    console.log(exist3.value);
 
-    const handleCurrentChange = (currentPage: number) => {
+    const handleCurrentChange = (val: number) => {
       // Update page in store
-      store.commit('setCurrentPage', currentPage);
-      // Update the route
-      router.push({ path: `/home/${currentPage}` });
+      currentPage.value = val;
+      console.log('当前页',currentPage.value);
+      store.commit('setCurrentPage', val);
     };
 
     return {

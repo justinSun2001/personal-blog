@@ -14,10 +14,6 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/home',
-    redirect: '/home/1',
-  },
-  {
-    path: '/home/:id',
     name: 'Home',
     component: () => import('@/views/Home.vue'),
     meta: {
@@ -46,7 +42,11 @@ const routes: RouteRecordRaw[] = [
       keepAlive: true, // 需要被缓存
     },
   },
-
+  {
+    path: '/nbadata/:id*',
+    name: 'NbaData',
+    component: () => import('@/views/NbaData.vue'),
+  },
   {
     path: '/about/:id*',
     name: 'About',
@@ -61,7 +61,7 @@ const router = createRouter({
 })
 
 // Navigation guard to check authentication
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _, next) => {
   // If the route is not '/user' and the user is not authenticated, redirect to '/user'
   const isAuthenticated = !!localStorage.getItem('user');  // Example: check if the 'user' exists in localStorage
   

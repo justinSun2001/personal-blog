@@ -33,7 +33,7 @@ interface RuleForm {
 
 export default defineComponent({
   name: 'Register',
-  setup(props, { emit }) {  // 这里通过 destructuring 获取 emit
+  setup(_, { emit }) {  // 这里通过 destructuring 获取 emit
     const ruleFormRef = ref<FormInstance>()
     const ruleForm = reactive<RuleForm>({
       email: '',
@@ -41,7 +41,7 @@ export default defineComponent({
       pass: '',
       checkPass: ''
     })
-    const validPass = (rule: any, value: any, callback: any) => {
+    const validPass = (_: any, value: any, callback: any) => {
       if (!value) {
         callback(new Error('请输入密码'))
       } else {
@@ -56,7 +56,7 @@ export default defineComponent({
         callback()
       }
     }
-    const checkPass = (rule: any, value: string, callback: Function) => {
+    const checkPass = (_: any, value: string, callback: Function) => {
       if (value === '') {
         callback(new Error('请再次输入密码'));
       } else if (value !== ruleForm.pass) {
@@ -101,6 +101,7 @@ export default defineComponent({
             http.post('/user/register', formData)
               .then((response: any) => {
                 ElMessage.success('注册成功，请登录!');
+                console.log(response);
                 emit('changeActive');
               })
               .catch(function (error) {
