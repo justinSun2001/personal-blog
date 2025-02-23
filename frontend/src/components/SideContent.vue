@@ -5,7 +5,9 @@
       <div class="sidetext">Follow Me</div>
       <div class="side-img">
         <div v-for="(item, index) in socialLinks" :key="index" class="img-item">
-          <a :href="item.link" target="_blank"><img :src="item.img" alt="social icon" /></a>
+          <a :href="item.link" target="_blank">
+            <img :src="item.img" alt="social icon" />
+          </a>
         </div>
       </div>
     </div>
@@ -131,6 +133,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
 img {
   width: 40px;
   height: 40px;
+}
+
+.side-img .img-item:first-child img {
+  width: 60px; /* 自定义宽度 */
 }
 
 .sidecontent {

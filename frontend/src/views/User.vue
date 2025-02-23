@@ -47,7 +47,6 @@ export default defineComponent({
     // 用于接收子组件传递的事件，切换 Active 状态
     const changeActive = () => {
       Active.value = !Active.value;
-      console.log('changeActive');
     };
 
     return {

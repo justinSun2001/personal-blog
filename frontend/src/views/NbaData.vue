@@ -36,13 +36,16 @@
   <div class="circle"></div>
   <!-- 打印 Web Worker 返回的数据 -->
   <p>List Length: {{ listLength }}</p>
+
+  <h2>钩子函数</h2>
+  <div style="height: 200px; width: 200px; background-color: beige;" ref= "el"></div>
 </template>
 <script setup lang="ts">
 import { reactive, ref, toRefs, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
 import { WebSocketService } from '@/services/websocket';
 // import { debounce, throttle } from 'lodash'; // 引入 lodash 库中的防抖函数
 import TopBar from '@/components/TopBar.vue'
-
+import {useEventListener} from '@/hooks/useEventListener';
 const count = ref(0)
 const count2 = ref(0)
 const increment = () => {
@@ -181,6 +184,12 @@ onBeforeUnmount(() => {
   }
 });
 
+const el = ref();
+const click = () => {
+  console.count('click');
+}
+useEventListener(el, 'click', click)
+
 </script>
 
 <style lang="scss" scoped>
@@ -189,7 +198,7 @@ onBeforeUnmount(() => {
   height: 300px;
   background-color: blue;
   border-radius: 50%;
-  position: absolute;
+  position: relative;
   animation: moveRightLeft 2s infinite alternate;
 }
 @keyframes moveRightLeft {

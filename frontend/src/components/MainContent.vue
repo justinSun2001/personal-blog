@@ -1,8 +1,10 @@
 <template>
   <div class="main">
-    <main-content-item v-if="exist1" :data1="articleData[0] ? articleData[0] : {}"></main-content-item>
-    <main-content-item v-if="exist2" :data1="articleData[1] ? articleData[1] : {}"></main-content-item>
-    <main-content-item v-if="exist3" :data1="articleData[2] ? articleData[2] : {}"></main-content-item>
+    <div class="pageContent">
+      <main-content-item v-if="exist1" :data="articleData[0] ? articleData[0] : {}"></main-content-item>
+      <main-content-item v-if="exist2" :data="articleData[1] ? articleData[1] : {}"></main-content-item>
+      <main-content-item v-if="exist3" :data="articleData[2] ? articleData[2] : {}"></main-content-item>
+    </div>
     <div class="pageIndex">
       <el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange"
       v-model:current-page="currentPage" :page-size="3" :pager-count="10" :total="totalPage" />
@@ -54,9 +56,9 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .main {
-  margin: 0 10px;
-}
-.pageIndex {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 20px 10px;
 }
 </style>

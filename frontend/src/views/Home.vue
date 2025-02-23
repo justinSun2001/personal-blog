@@ -6,10 +6,10 @@
     <div class="head">
       <HeadContent></HeadContent>
     </div>
-    <el-divider></el-divider>
-    <div class="page">
-      <MainContent v-if="dataLoaded"></MainContent>
-      <div class="side">
+    <div class="main">
+      <el-divider></el-divider>
+      <div class="page">
+        <MainContent v-if="dataLoaded"></MainContent>
         <SideContent v-if="dataLoaded"></SideContent>
       </div>
     </div>
@@ -29,7 +29,13 @@ import MainContent from "@/components/MainContent.vue";
 import HeadContent from "@/components/HeadContent.vue";
 import SideContent from "@/components/SideContent.vue";
 import BottomContent from "@/components/BottomContent.vue";
-
+interface Article {
+  title: string;
+  date: string;
+  path: string;
+  id: string;
+  genre: { _id: string, name: string, checked: boolean }[]; // genre 是一个数组，每个对象有一个 name 属性
+}
 const store = useStore();
 // 标记数据是否加载完成
 const dataLoaded = ref(false);
@@ -38,14 +44,13 @@ const dataLoaded = ref(false);
 const fetchArticles = async () => {
   dataLoaded.value = false;
   try {
-    const result: any = await http.get('/catalog/articlesData');
+    const result: any[] = await http.get('/catalog/articlesData');
     const articleCount = store.state.articleCount;
     const currentPage = store.getters.getCurrentPage;
     console.log("文章总数", articleCount);
     console.log("当前页", currentPage);
 
     const startIndex = articleCount - (Number(currentPage) * 3 - 2);
-    console.log("起始索引", startIndex);
 
     // 这里可以使用一个数组来存储请求的文章
     const requestedIndexes = [];
@@ -73,7 +78,7 @@ const fetchArticles = async () => {
             title: articleData.title,
             message: articleData.summary,
             date: articleData.date,
-            url: `http://localhost:3000${articleData.path}`,
+            path: articleData.path,
             id: articleData._id,
             genre: articleData.genre,
           };
@@ -82,13 +87,33 @@ const fetchArticles = async () => {
     );
 
     // 一旦所有请求都完成，将结果存储到 articleData 数组中
-    const articleData= articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
+    const articleData: Article[] = articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
     store.commit("setArticleData", articleData);
 
     // 如果是第一页数据，存储到 Vuex
     if (currentPage === 1 && !store.state.recentArticles.length) {
-      console.log("第一页数据")
       store.commit("setRecentArticles", articleData);
+    } else if (currentPage === 1 && store.state.recentArticles.length) {
+      // 获取当前 Vuex 中的 recentArticles
+      const currentArticles: Article[] = store.state.recentArticles;
+      // 检查文章是否发生变化
+      articleData.forEach((newArticle, index) => {
+        if (currentArticles[index] == null) {
+          store.commit("changeRecentArticles", { index, article: newArticle });
+        } else {
+          // 过滤出 title 或 genre 中的 name 发生变化的文章
+          const genreChanged = currentArticles[index].genre.some(existingGenre =>
+            newArticle.genre.some(newGenre =>
+              newGenre.name !== existingGenre.name
+            )
+          );
+          // 检查 title 是否相同
+          if (currentArticles[index].title !== newArticle.title || genreChanged) {
+            store.commit("changeRecentArticles", { index, article: newArticle  });
+          }
+        }
+
+      });
     }
 
   } catch (err) {
@@ -154,7 +179,7 @@ onMounted(() => {
   padding-top: 54px;
 }
 
-.page {
+.main {
   flex: 1;
   background-color: #f9f9fb;
 }
@@ -164,6 +189,8 @@ onMounted(() => {
   font-size: 10px;
   width: 100%;
   line-height: 40px;
+  color: black;
+  background-color: rgba(0, 0, 0, 0.177);
 }
 
 /* 响应式布局 */
@@ -171,10 +198,6 @@ onMounted(() => {
   .page {
     display: flex;
     justify-content: space-between;
-  }
-
-  .side {
-    margin-left: 50px;
   }
 }
 </style>

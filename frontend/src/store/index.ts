@@ -54,7 +54,11 @@ const store = createStore<State>({
     },
     setRecentArticles(state: State, recentArticles: object[]) {
       state.recentArticles = recentArticles;  // 更新最近文章列表
-    }
+    },
+    changeRecentArticles(state: State, payload: { index: number; article: object; }) {
+      const { index, article } = payload;
+      state.recentArticles[index] = article; // 更新指定索引的文章
+    },
   },
   actions: {
     // 异步操作，获取文章数据并更新到 state

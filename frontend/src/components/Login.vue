@@ -58,7 +58,6 @@ export default defineComponent({
       const encrypted = await encryptParam(values);
       const response: AxiosResponse = await login({ encrypted });
       const data = response.data;
-      console.log(response);
       if (data.success == false) {
         ElMessage.error(data.err);
         return;
