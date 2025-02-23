@@ -31,7 +31,6 @@ import { defineComponent, ref, defineAsyncComponent } from 'vue';
 const Login = defineAsyncComponent(() => import('@/components/Login.vue'));
 const Register = defineAsyncComponent(() => import('@/components/Register.vue'));
 export default defineComponent({
-  name: 'User',
   components: {
     Login,
     Register,
@@ -85,28 +84,31 @@ export default defineComponent({
 }
 
 .right {
-    width: 40%;
-    height: 100%;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-  }
+  width: 40%;
+  height: 100%;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
 
-  .r1 {
-    display: flex;
-    flex-direction: row;
-    padding-left: 5%;
-    color: #cdccccd6;
-  }
-  .r3 {
-    padding-left: 5%;
-  }
+.r1 {
+  display: flex;
+  flex-direction: row;
+  padding-left: 5%;
+  color: #cdccccd6;
+}
+
+.r3 {
+  padding-left: 5%;
+}
+
 a {
   text-decoration: none;
   color: coral;
   font-size: 12px;
 }
+
 @media screen and (min-width: 960px) {
   .page {
     background: url('@/assets/img/bg3.png');
@@ -143,6 +145,7 @@ a {
     justify-content: center;
     align-items: center;
   }
+
   .right {
     width: 100%;
   }

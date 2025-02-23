@@ -25,7 +25,8 @@
   <h2>分页防抖/节流</h2>
   <h3>{{ currentPage }}</h3>
   <div v-loading="loading" element-loading-text="Loading..." style="display: inline-block;">
-    <button v-for="page in totalPages" :key="page" style="cursor: pointer; " @click="handlePageChange(page)">{{ page }}</button>
+    <button v-for="page in totalPages" :key="page" style="cursor: pointer; " @click="handlePageChange(page)">{{ page
+      }}</button>
   </div>
 
   <h2>reactive结构赋值</h2>
@@ -38,14 +39,14 @@
   <p>List Length: {{ listLength }}</p>
 
   <h2>钩子函数</h2>
-  <div style="height: 200px; width: 200px; background-color: beige;" ref= "el"></div>
+  <div style="height: 200px; width: 200px; background-color: beige;" ref="el"></div>
 </template>
 <script setup lang="ts">
 import { reactive, ref, toRefs, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
 import { WebSocketService } from '@/services/websocket';
 // import { debounce, throttle } from 'lodash'; // 引入 lodash 库中的防抖函数
 import TopBar from '@/components/TopBar.vue'
-import {useEventListener} from '@/hooks/useEventListener';
+import { useEventListener } from '@/hooks/useEventListener';
 const count = ref(0)
 const count2 = ref(0)
 const increment = () => {
@@ -114,7 +115,7 @@ const totalPages = ref(10);
 // 加载状态
 const loading = ref(false);
 
-const fetchData = async (page:number) => {
+const fetchData = async (page: number) => {
   // 模拟异步请求
   return new Promise<void>((resolve) => {
     setTimeout(() => {
@@ -148,12 +149,12 @@ const handlePageChange = async (page: number) => {
 };
 
 
-const user1 = reactive({ name: [1,2,3] });
+const user1 = reactive({ name: [1, 2, 3] });
 // 解构赋值，保持响应式
 const { name } = toRefs(user1);
 
 const changeName = () => {
-  user1.name = [2,2,3];
+  user1.name = [2, 2, 3];
   console.log(name.value);
 };
 
@@ -201,10 +202,12 @@ useEventListener(el, 'click', click)
   position: relative;
   animation: moveRightLeft 2s infinite alternate;
 }
+
 @keyframes moveRightLeft {
   from {
     left: 100px;
   }
+
   to {
     left: 600px;
   }
