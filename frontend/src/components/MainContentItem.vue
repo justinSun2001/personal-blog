@@ -1,21 +1,22 @@
 <template>
-  <div class="main-content-item">
-    <!-- Image -->
-    <div class="item-icon">
-      <img :src="url" @click="imgClick" alt="无图片上传" />
+  <div>
+    <div class="main-content-item">
+      <!-- Image -->
+      <div class="item-icon">
+        <img :src="url" @click="imgClick" alt="无图片上传" />
+      </div>
+      <div class="item-container" ref="container">
+        <div class="item-title">{{ data.title }}</div>
+        <div class="item-text" ref="textContainer" :style="{ '-webkit-line-clamp': maxLines }">{{ data.summary }}</div>
+      </div>
+      <div class="item-date">{{ data.date }}</div>
     </div>
-
-    <div class="item-container" ref="container" >
-      <div class="item-title" >{{ data.title }}</div>
-      <div class="item-text" ref="textContainer" :style="{ '-webkit-line-clamp': maxLines }">{{ data.message }}</div>
-    </div>
-    <div class="item-date">{{ data.date }}</div>
+    <el-divider></el-divider>
   </div>
-  <el-divider></el-divider>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import defaultpic from "@/assets/img/default.svg";
 
@@ -29,7 +30,14 @@ export default defineComponent({
   },
   setup(props) {
     const router = useRouter();
-    let url = ref(props.data.path !== undefined ? `http://localhost:3000/${props.data.path}` : defaultpic);
+    // let url = ref(props.data.path !== undefined ? `http://localhost:3000/${props.data.path}` : defaultpic);
+    const url = computed(() => {
+      if (props.data.path) {
+        return `http://localhost:3000/${props.data.path}`
+      } else {
+        return defaultpic
+      }
+    })
     const imgClick = () => {
       if (props.data.id) {
         router.push({
@@ -44,7 +52,7 @@ export default defineComponent({
     // 动态调整显示的行数
     const adjustLineClamp = () => {
       if (textContainer.value && container.value) {
-        
+
         const textHeight = textContainer.value.offsetTop; // 获取文本的高度
         const containerHeight = container.value.offsetHeight; // 获取容器的高度
         const lineHeight = parseInt(getComputedStyle(textContainer.value).lineHeight); // 获取字体大小
@@ -57,6 +65,7 @@ export default defineComponent({
       adjustLineClamp(); // 页面加载后调整行数
       window.addEventListener('resize', adjustLineClamp); // 在窗口大小改变时更新行数
     });
+
     return {
       url,
       imgClick,
@@ -84,6 +93,8 @@ export default defineComponent({
     border-radius: 10px;
     margin-right: 10px;
     cursor: pointer;
+    object-fit: contain;
+    border: 1px solid #ccc;
   }
 
   .item-icon:hover {
@@ -144,6 +155,9 @@ export default defineComponent({
     opacity: 0.9;
     border-radius: 10px;
     margin-left: 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    object-fit: contain;
   }
 
   .item-container {
@@ -173,7 +187,7 @@ export default defineComponent({
     font-size: 8px;
     position: absolute;
     bottom: 0px;
-    right: 100px;
+    right: 112px;
     color: rgb(187, 177, 168);
   }
 }

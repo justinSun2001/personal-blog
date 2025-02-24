@@ -2,7 +2,7 @@
   <div class="top_container">
     <div class="left">
       <div class="user">
-        <img src="../assets/img/user.png" @click="logout"/>
+        <img src="../assets/img/user.png" @click="logout" />
       </div>
     </div>
     <ul class="nav">
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { defineProps } from "vue";
 import { useRouter } from "vue-router";
-import { useStore } from "vuex"; 
+import { useStore } from "vuex";
 
 // 定义组件的 Props
 defineProps<{
@@ -34,7 +34,7 @@ const logout = () => {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
-  router.push(`/user`);
+  router.push({ name: "User" });
 }
 
 const getHome = () => {
@@ -84,6 +84,7 @@ const getAbout = () => {
   display: flex;
   justify-content: flex-start;
   margin-right: 10px;
+
   li {
     line-height: 54px;
     padding: 0px 10px;

@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -7,8 +7,8 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': '/src'
-    }
+      '@': '/src',
+    },
   },
   // 配置 CSS 相关选项
   css: {
@@ -17,12 +17,12 @@ export default defineConfig({
       // 针对 SCSS 预处理器的配置
       scss: {
         // 自动引入全局样式，每次编译 SCSS 文件时都会自动包含 main.scss 文件
-        additionalData: '@use "@/assets/styles/main.scss" as *;' 
-      }
-    }
+        additionalData: '@use "@/assets/styles/main.scss" as *;',
+      },
+    },
   },
   build: {
-    outDir: 'dist',  // 打包输出目录
+    outDir: 'dist', // 打包输出目录
     assetsDir: 'assets', // 资源目录
     // 代码压缩配置
     terserOptions: {
@@ -32,7 +32,7 @@ export default defineConfig({
         drop_debugger: true,
       },
     },
-    cssCodeSplit: true,  // 启用 CSS 代码分割
+    cssCodeSplit: true, // 启用 CSS 代码分割
     // 控制代码分割的行为
     rollupOptions: {
       input: '/index.html', // 指定入口文件
@@ -42,15 +42,28 @@ export default defineConfig({
           // 根据模块路径来分割
           if (id.includes('node_modules')) {
             // 将第三方库单独打包
-            return 'vendor'
+            return 'vendor';
           }
         },
         // 添加哈希后缀的文件名，提升缓存效率
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]',
-      
-      }
-    }
+        // entryFileNames: 'assets/[name].[hash].js',
+        // chunkFileNames: 'assets/[name].[hash].js',
+        // assetFileNames: 'assets/[name].[hash].[ext]',
+        entryFileNames: 'js/[name].[hash].js',
+        chunkFileNames: 'js/[name].[hash].js',
+        assetFileNames({ names }) {
+          if (/\.(gif|jpe?g|png|svg)$/.test(names[0] ?? '')) {
+            return 'img/[name]-[hash][extname]';
+          } else if (/\.(woff|woff2|eot|ttf|otf)$/.test(names[0] ?? '')) {
+            return 'font/[name]-[hash][extname]';
+          } else if (/\.(css)$/.test(names[0] ?? '')) {
+            // 指定 worker 文件的规则
+            return 'css/[name]-[hash][extname]';
+          } else {
+            return 'assets/[name]-[hash][extname]';
+          }
+        },
+      },
+    },
   },
-})
+});

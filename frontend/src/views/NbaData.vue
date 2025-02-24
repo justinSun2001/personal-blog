@@ -1,45 +1,50 @@
 <template>
-  <TopBar />
-  <p>计数器:{{ count }}</p>
-  <button @click="increment">+</button>
+  <div class="top">
+    <TopBar />
+  </div>
+  <div style="margin-top: 54px;">
+    <p>计数器:{{ count }}</p>
+    <button @click="increment">+</button>
 
-  <p>计数器二:{{ count2 }}</p>
-  <button @click="count2++">+</button>
-  <br>
-  {{ typeof user.name }}
-  <p>变化:{{ user.age }}</p>
-  <input v-model="user.age">
-  <p>变化:{{ user.name }}</p>
-  <input type="text" v-model.number="user.name">
+    <p>计数器二:{{ count2 }}</p>
+    <button @click="count2++">+</button>
+    <br>
+    {{ typeof user.name }}
+    <p>变化:{{ user.age }}</p>
+    <input v-model="user.age">
+    <p>变化:{{ user.name }}</p>
+    <input type="text" v-model.number="user.name">
 
-  <div class="chat">
-    <h2>WebSocket Chat</h2>
-    <div class="messages">
-      <div v-for="(message, index) in messages" :key="index" class="message">
-        {{ message }}
+    <div class="chat">
+      <h2>WebSocket Chat</h2>
+      <div class="messages">
+        <div v-for="(message, index) in messages" :key="index" class="message">
+          {{ message }}
+        </div>
       </div>
+      <input v-model="message" @keyup.enter="sendMessage" placeholder="Type a message..." />
     </div>
-    <input v-model="message" @keyup.enter="sendMessage" placeholder="Type a message..." />
-  </div>
 
-  <h2>分页防抖/节流</h2>
-  <h3>{{ currentPage }}</h3>
-  <div v-loading="loading" element-loading-text="Loading..." style="display: inline-block;">
-    <button v-for="page in totalPages" :key="page" style="cursor: pointer; " @click="handlePageChange(page)">{{ page
+    <h2>分页防抖/节流</h2>
+    <h3>{{ currentPage }}</h3>
+    <div v-loading="loading" element-loading-text="Loading..." style="display: inline-block;">
+      <button v-for="page in totalPages" :key="page" style="cursor: pointer; " @click="handlePageChange(page)">{{ page
       }}</button>
+    </div>
+
+    <h2>reactive结构赋值</h2>
+    <p>{{ user1.name }}</p>
+    <button @click="changeName">Change Name</button>
+
+    <h2>webworker</h2>
+    <div class="circle"></div>
+    <!-- 打印 Web Worker 返回的数据 -->
+    <p>List Length: {{ listLength }}</p>
+
+    <h2>钩子函数</h2>
+    <div style="height: 200px; width: 200px; background-color: beige;" ref="el"></div>
+
   </div>
-
-  <h2>reactive结构赋值</h2>
-  <p>{{ user1.name }}</p>
-  <button @click="changeName">Change Name</button>
-
-  <h2>webworker</h2>
-  <div class="circle"></div>
-  <!-- 打印 Web Worker 返回的数据 -->
-  <p>List Length: {{ listLength }}</p>
-
-  <h2>钩子函数</h2>
-  <div style="height: 200px; width: 200px; background-color: beige;" ref="el"></div>
 </template>
 <script setup lang="ts">
 import { reactive, ref, toRefs, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
@@ -194,6 +199,14 @@ useEventListener(el, 'click', click)
 </script>
 
 <style lang="scss" scoped>
+.top {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  background-color: white;
+  z-index: 100;
+}
+
 .circle {
   width: 300px;
   height: 300px;

@@ -1,19 +1,14 @@
 <template>
   <div class="main">
-    <div class="text-right" v-for="(item, index) in message.slice(start, end).reverse()" :key="index">
+    <div class="text-right" v-for="(item, index) in summary.slice(start, end).reverse()" :key="index">
       <div class="text-container">
         <a class="text" @click="itemClick(index)">{{ item }}</a>
       </div>
     </div>
   </div>
   <div class="pageIndex">
-    <el-pagination
-      background
-      layout="prev, pager, next"
-      @current-change="handleCurrentChange"
-      :current-page="currentPage"
-      :page-size="pageSize"
-      :total="total">
+    <el-pagination background layout="prev, pager, next" @current-change="handleCurrentChange"
+      :current-page="currentPage" :page-size="pageSize" :total="total">
     </el-pagination>
   </div>
 </template>
@@ -23,6 +18,7 @@ import { defineComponent, ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import http from '@/services/http'
+import type { ItemArray, ArticleData } from '@/types/index'
 
 export default defineComponent({
   name: 'ArticlesContent',
@@ -38,31 +34,29 @@ export default defineComponent({
     const pageSize = ref(15)
     const start = ref(0)
     const end = ref(0)
-    const message = ref<string[]>([])
+    const summary = ref<string[]>([])
     const items = ref<string[]>([])
 
     const router = useRouter()
     const store = useStore()
 
     // Method to fetch articles
-    const fetchData = () => {
+    const fetchData = async () => {
       // Fetch total article count
-     
-        total.value = store.state.articleCount
-        start.value = total.value - (props.currentPage * pageSize.value) > 0
-          ? total.value - (props.currentPage * pageSize.value) - 1
-          : 0
-        end.value = total.value - ((props.currentPage - 1) * pageSize.value)
-        
-        // Fetch articles data
-        for (let i = total.value - 1; i >= 0; i--) {
-          http.get("/catalog/articlesData").then((res:any) => {
-            items.value[i] = res[i]._id
-            http.get(`/catalog/articlesData/${items.value[i]}`).then((result:any) => {
-              message.value[i] = result.article.summary
-            })
-          })
-        }
+
+      total.value = store.state.articleCount
+      start.value = total.value - (props.currentPage * pageSize.value) > 0
+        ? total.value - (props.currentPage * pageSize.value) - 1
+        : 0
+      end.value = total.value - ((props.currentPage - 1) * pageSize.value)
+
+      // Fetch articles data
+      for (let i = total.value - 1; i >= 0; i--) {
+        const res: ItemArray = await http.get('/catalog/articlesData')
+        items.value[i] = res[i]._id;
+        const result: ArticleData = await http.get(`/catalog/articlesData/${items.value[i]}`)
+        summary.value[i] = result.article.summary;
+      }
     }
 
     // Fetch data on component mount
@@ -92,7 +86,7 @@ export default defineComponent({
       pageSize,
       start,
       end,
-      message,
+      summary,
       items,
       itemClick,
       handleCurrentChange

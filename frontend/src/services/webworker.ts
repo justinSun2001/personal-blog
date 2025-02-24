@@ -1,8 +1,8 @@
 // worker.ts
-self.onmessage = function (_) {
+self.onmessage = function () {
   const list: number[] = [];
   for (let i = 0; i < 10000000; ++i) {
     list.push(Date.now());
   }
-  self.postMessage(list.length);  // 返回数组的长度
-}
+  self.postMessage(list.length); // 返回数组的长度
+};

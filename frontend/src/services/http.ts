@@ -14,10 +14,10 @@ const { baseURL, useTokenAuthorization, timeout, withCredentials } = serviceConf
 const http = axios.create({
   baseURL,
   timeout,
-  withCredentials
+  withCredentials,
 });
 
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config = handleRequestHeader(config, {}); // 其他调整
   if (useTokenAuthorization) {
     config = handleAuth(config, isRefreshTokening); // 添加token
@@ -27,8 +27,7 @@ http.interceptors.request.use(config => {
 });
 
 http.interceptors.response.use(
-  res => {
-    console.log(res);
+  (res) => {
     if (res.status === 200 || res.status === 201) {
       // handleAuthError(res);
       return Promise.resolve(res.data);
@@ -36,7 +35,7 @@ http.interceptors.response.use(
 
     return Promise.reject(res);
   },
-  async err => {
+  async (err) => {
     console.log(err);
     const needRefreshToken = err.response.status === 401 && err.config.url !== '/user/refreshToken';
     if (needRefreshToken) {
@@ -71,7 +70,7 @@ async function startRefresh(config: InternalAxiosRequestConfig<any>) {
 
 // 正在刷新token,将当前请求存储
 function waitingRefresh(config: InternalAxiosRequestConfig<any>) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     //存储刷新期间失败的请求,返回一个新的promise,保持该次请求的状态为等待,不让这次请求结束,使结果正确返回至对应的请求发出点
     watingQueue.push({ config, resolve });
   });
@@ -91,12 +90,11 @@ async function refreshToken() {
       // 保存 token 和 refreshToken
       setTokenInLocal(token);
       setRefreshTokenInLocal(refreshToken);
-    } else if(response.status === 401) {
+    } else if (response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       router.push('/user');
-    }
-      else {
+    } else {
       // 如果状态码不是 200，处理异常或错误逻辑
       console.error('Refresh token failed with status:', response.status);
     }

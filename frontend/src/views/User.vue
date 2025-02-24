@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="page">
     <div class="main">
@@ -26,35 +27,24 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, defineAsyncComponent } from 'vue';
+<script lang="ts" setup>
+import { ref, defineAsyncComponent } from 'vue';
+
+// 异步组件导入
 const Login = defineAsyncComponent(() => import('@/components/Login.vue'));
 const Register = defineAsyncComponent(() => import('@/components/Register.vue'));
-export default defineComponent({
-  components: {
-    Login,
-    Register,
-  },
-  setup() {
-    // 使用 ref 来定义 reactive 数据
-    const Active = ref(true);
 
-    const changeColor = () => {
-      Active.value = !Active.value;
-    };
+// 定义 reactive 数据
+const Active = ref(true);
 
-    // 用于接收子组件传递的事件，切换 Active 状态
-    const changeActive = () => {
-      Active.value = !Active.value;
-    };
+// 定义方法
+const changeColor = () => {
+  Active.value = !Active.value;
+};
 
-    return {
-      Active,
-      changeColor,
-      changeActive
-    };
-  }
-});
+const changeActive = () => {
+  Active.value = !Active.value;
+};
 </script>
 
 <style scoped lang="scss">

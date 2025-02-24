@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="top">
     <TopBar :in-use1="true"></TopBar>
@@ -9,8 +10,8 @@
     <div class="main">
       <el-divider></el-divider>
       <div class="page">
-        <MainContent v-if="dataLoaded"></MainContent>
-        <SideContent v-if="dataLoaded"></SideContent>
+        <MainContent></MainContent>
+        <SideContent></SideContent>
       </div>
     </div>
     <div class="bottom">
@@ -20,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { onMounted, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 import http from "@/services/http";
 
@@ -29,26 +30,18 @@ import MainContent from "@/components/MainContent.vue";
 import HeadContent from "@/components/HeadContent.vue";
 import SideContent from "@/components/SideContent.vue";
 import BottomContent from "@/components/BottomContent.vue";
-interface Article {
-  title: string;
-  date: string;
-  path: string;
-  id: string;
-  genre: { _id: string, name: string, checked: boolean }[]; // genre 是一个数组，每个对象有一个 name 属性
-}
-const store = useStore();
-// 标记数据是否加载完成
-const dataLoaded = ref(false);
 
+import type { Article, ItemArray, ArticleData, UseArticle } from "@/types/index";
+
+const store = useStore();
 // 请求数据
 const fetchArticles = async () => {
-  dataLoaded.value = false;
   try {
-    const result: any[] = await http.get('/catalog/articlesData');
+    const result: ItemArray = await http.get('/catalog/articlesData');
     const articleCount = store.state.articleCount;
     const currentPage = store.getters.getCurrentPage;
-    console.log("文章总数", articleCount);
-    console.log("当前页", currentPage);
+    console.log("文章总数1", articleCount);
+    console.log("当前页1", currentPage);
 
     const startIndex = articleCount - (Number(currentPage) * 3 - 2);
 
@@ -72,11 +65,11 @@ const fetchArticles = async () => {
         const article = result[index];
         if (article) {
           // 发送请求获取文章数据
-          const res: any = await http.get(`/catalog/articlesData/${article._id}`);
+          const res: ArticleData = await http.get(`/catalog/articlesData/${article._id}`);
           const articleData = res.article;
           return {
             title: articleData.title,
-            message: articleData.summary,
+            summary: articleData.summary,
             date: articleData.date,
             path: articleData.path,
             id: articleData._id,
@@ -87,7 +80,7 @@ const fetchArticles = async () => {
     );
 
     // 一旦所有请求都完成，将结果存储到 articleData 数组中
-    const articleData: Article[] = articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
+    const articleData: UseArticle[] = articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
     store.commit("setArticleData", articleData);
 
     // 如果是第一页数据，存储到 Vuex
@@ -109,7 +102,7 @@ const fetchArticles = async () => {
           );
           // 检查 title 是否相同
           if (currentArticles[index].title !== newArticle.title || genreChanged) {
-            store.commit("changeRecentArticles", { index, article: newArticle  });
+            store.commit("changeRecentArticles", { index, article: newArticle });
           }
         }
 
@@ -127,9 +120,15 @@ watch(
     // 监听 currentPage 变化
     if (newPage !== oldPage) {
       console.log("currentPage 变化了", oldPage, "=>", newPage);
-      fetchArticles().then(() => {
-        dataLoaded.value = true;
-      });
+      fetchArticles()
+      // .then(() => {
+      //   // DOM更新后恢复滚动
+      //   nextTick(() => {
+      //     const scrollPosition = store.getters.getScrollPosition;
+      //     console.log('滚动位置1', scrollPosition)
+      //     document.documentElement.scrollTo(0, scrollPosition)
+      //   })
+      // });
     }
 
     // 监听 articleCount 变化
@@ -150,13 +149,18 @@ onMounted(() => {
       return fetchArticles();  // fetchArticles 函数返回一个 Promise
     })
     .then(() => {
-      // 当 fetchArticles 完成后，设置 dataLoaded 为 true
-      dataLoaded.value = true;
+      // DOM更新后恢复滚动
+      nextTick(() => {
+        const scrollPosition = store.getters.getScrollPosition;
+        console.log('滚动位置1', scrollPosition)
+        document.documentElement.scrollTo(0, scrollPosition)
+      })
     })
     .catch((error) => {
       console.error('Failed to fetch data:', error);
     });
 });
+
 
 </script>
 

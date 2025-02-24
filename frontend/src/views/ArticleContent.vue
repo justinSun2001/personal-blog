@@ -1,5 +1,7 @@
 <template>
-  <TopBar />
+  <div class="top">
+    <TopBar></TopBar>
+  </div>
   <div class="page">
     <div class="main">
       <div class="title">
@@ -9,8 +11,12 @@
         --{{ date }}
       </div>
       <div class="head">
-        {{ message }}
+        {{ summary }}
       </div>
+      <div class="img">
+        <img :src="imgUrl" alt="文章图片">
+      </div>
+
       <div class="markdown-body" v-html="renderedMarkdown"></div>
     </div>
     <div class="side">
@@ -20,37 +26,44 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, onUpdated } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import http from '@/services/http';
 import SideContent from '@/components/SideContent.vue';
 import MarkdownIt from 'markdown-it'
 import TopBar from '@/components/TopBar.vue';
+import type { ArticleData } from "@/types/index";
 
 
 export default defineComponent({
   name: 'ArticleContent',
-  components: { SideContent , TopBar },
+  components: { SideContent, TopBar },
   setup() {
     const route = useRoute();
     const md = new MarkdownIt();
 
     const title = ref('');
-    const message = ref('');
+    const summary = ref('');
     const date = ref('');
     const text = ref('');
+    const imgUrl = ref('');
 
-    const fetchData = () => {
+    const fetchData = async () => {
       const _id = route.params.id;
-      http.get(`/catalog/articlesData/${_id}`).then((result:any) => {
-        title.value = result.article.title;
-        message.value = result.article.summary;
-        date.value = result.article.date;
-        text.value = result.article.text;
-      });
+      try {
+        const articleData: ArticleData = await http.get(`/catalog/articlesData/${_id}`);
+        title.value = articleData.article.title;
+        summary.value = articleData.article.summary;
+        date.value = articleData.article.date;
+        text.value = articleData.article.text;
+        imgUrl.value = `http://localhost:3000${articleData.article.path}`;
+      }
+      catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
-    
-    const renderedMarkdown= computed(() => md.render(text.value));
+
+    const renderedMarkdown = computed(() => md.render(text.value));
 
     onMounted(() => {
       fetchData();
@@ -62,15 +75,11 @@ export default defineComponent({
       document.head.appendChild(link);
     });
 
-    onUpdated(() => {
-      fetchData();
-    });
-
     return {
       title,
-      message,
+      summary,
       date,
-      text,
+      imgUrl,
       renderedMarkdown
     };
   },
@@ -78,10 +87,19 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+.top {
+  width: 100%;
+  position: fixed;
+  background-color: white;
+  z-index: 100;
+}
+
 .page {
+  padding-top: 54px;
   margin: 0 18px;
   display: flex;
   flex-direction: column;
+
 
   @media screen and (min-width: 1080px) {
     flex-direction: row;
@@ -90,9 +108,10 @@ export default defineComponent({
     .side {
       margin-left: 20px;
       position: sticky;
-      top: 0;
+      top: 54px;
       z-index: 1;
     }
+
     .main {
       display: flex;
       flex-direction: column;
@@ -117,6 +136,10 @@ export default defineComponent({
 
 .date {
   text-align: right;
+}
+
+.img img {
+  width: 80%;
 }
 
 .head {

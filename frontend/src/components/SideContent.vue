@@ -39,11 +39,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, watch } from "vue";
 import { useStore } from "vuex";
 import type { FormInstance, FormRules } from "element-plus";
 import http from "@/services/http";
-
+import type { Genre, UseArticle } from "@/types/index";
 import bilibili from "@/assets/img/bilibili.png";
 import qq from "@/assets/img/qq.png";
 import github from "@/assets/img/github.png";
@@ -70,18 +70,25 @@ const rules = reactive<FormRules<typeof form>>({
 
 const recentPosts = ref<string[]>([]);
 const store = useStore();
-const data = computed(() => store.getters.getRecentArticles);
-recentPosts.value = data.value.map((item: any) => {
+
+watch(
+  () => store.getters.getRecentArticles,
+  (newValue: UseArticle[]) => {
+    recentPosts.value = newValue.map((item: UseArticle) => {
       if (item.genre.length > 1) {
-        const genreNames = item.genre.map((genre: any) => genre.name).join("/");
+        const genreNames = item.genre.map((genre: Genre) => genre.name).join("/");
         return `${genreNames}: ${item.title}`;
+      } else {
+        return `${item.genre[0].name}: ${item.title}`;
       }
-      return `${item.genre[0].name}: ${item.title}`;  // 假设返回的数据是 article
-    });
+    })
+  },
+  { immediate: true }
+)
 
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  formEl.validate(async (valid:boolean) => {
+  formEl.validate(async (valid: boolean) => {
     if (valid) {
       try {
         await http.post("/user/email", new URLSearchParams(form.email));
@@ -103,7 +110,9 @@ const submitForm = (formEl: FormInstance | undefined) => {
   margin: 0 10px;
 }
 
-.side1, .side2, .side3 {
+.side1,
+.side2,
+.side3 {
   padding: 20px 0;
 }
 
@@ -136,7 +145,8 @@ img {
 }
 
 .side-img .img-item:first-child img {
-  width: 60px; /* 自定义宽度 */
+  width: 60px;
+  /* 自定义宽度 */
 }
 
 .sidecontent {
