@@ -82,7 +82,8 @@ const privateDecrypt = (encrypted: string): any => {
   const decryptedBuffer = crypto.privateDecrypt(
     {
       key: privateKey,
-      padding: crypto.constants.RSA_PKCS1_PADDING, // 根据加密时的填充方式选择
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, // 修改填充方式
+      oaepHash: "sha256", // 明确指定哈希算法
     },
     encryptedData
   );

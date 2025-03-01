@@ -25,3 +25,6 @@ dist-ssr
 *.yaml
 .vite
 .vscode
+
+backend/src/.env
+backend/src/public
