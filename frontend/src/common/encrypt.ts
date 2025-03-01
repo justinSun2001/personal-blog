@@ -1,7 +1,7 @@
-import JSEncrypt from 'jsencrypt';
 import { setKeyInLocal, getKeyByLocal } from '@/common/keyAndToken.ts';
 import { getPubKey } from '@/services/user';
 import type { AxiosResponse } from 'axios';
+import forge from "node-forge";
 
 // 获取公钥
 export const getRsaKey = async () => {
@@ -24,10 +24,11 @@ export const getRsaKey = async () => {
   return key;
 };
 
-// 加密参数
 export const encryptParam = async (param: object) => {
-  const key = await getRsaKey();
-  const encryptor = new JSEncrypt();
-  encryptor.setPublicKey(key);
-  return encryptor.encrypt(JSON.stringify(param));
+  const publicKeyPem = await getRsaKey();
+  const publicKey = forge.pki.publicKeyFromPem(publicKeyPem);
+  const encrypted = publicKey.encrypt(forge.util.encodeUtf8(JSON.stringify(param)), "RSA-OAEP", {
+    md: forge.md.sha256.create(), // 使用 sha256
+  });
+  return forge.util.encode64(encrypted);
 };
