@@ -31,7 +31,7 @@ import HeadContent from "@/components/HeadContent.vue";
 import SideContent from "@/components/SideContent.vue";
 import BottomContent from "@/components/BottomContent.vue";
 
-import type { Article, ItemArray, ArticleData, UseArticle } from "@/types/index";
+import type { Article, ItemArray, UseArticle } from "@/types/index";
 
 const store = useStore();
 // 请求数据
@@ -65,8 +65,8 @@ const fetchArticles = async () => {
         const article = result[index];
         if (article) {
           // 发送请求获取文章数据
-          const res: ArticleData = await http.get(`/catalog/articlesData/${article._id}`);
-          const articleData = res.article;
+          const res: Article = await http.get(`/catalog/articlesData/${article._id}`);
+          const articleData = res;
           return {
             title: articleData.title,
             summary: articleData.summary,

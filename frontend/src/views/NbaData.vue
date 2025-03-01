@@ -1,6 +1,6 @@
 <template>
   <div class="top">
-    <TopBar />
+    <TopBar :in-use3="true" />
   </div>
   <div style="margin-top: 54px;">
     <p>计数器:{{ count }}</p>
@@ -29,7 +29,7 @@
     <h3>{{ currentPage }}</h3>
     <div v-loading="loading" element-loading-text="Loading..." style="display: inline-block;">
       <button v-for="page in totalPages" :key="page" style="cursor: pointer; " @click="handlePageChange(page)">{{ page
-      }}</button>
+        }}</button>
     </div>
 
     <h2>reactive结构赋值</h2>

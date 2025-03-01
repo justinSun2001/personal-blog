@@ -78,8 +78,10 @@ watch(
       if (item.genre.length > 1) {
         const genreNames = item.genre.map((genre: Genre) => genre.name).join("/");
         return `${genreNames}: ${item.title}`;
-      } else {
+      } else if (item.genre.length === 1) {
         return `${item.genre[0].name}: ${item.title}`;
+      } else {
+        return item.title;
       }
     })
   },

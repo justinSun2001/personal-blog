@@ -1,18 +1,29 @@
 <template>
-  <KeepAlive>
-    <router-view />
-  </KeepAlive>
+  <router-view />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { onMounted, onBeforeUnmount } from 'vue';
+import { WebSocketService } from '@/services/websocket';
+import { ElNotification } from 'element-plus'
+const websocketService = new WebSocketService();
+// 建立 WebSocket 连接
+onMounted(() => {
+  websocketService.connect('ws://localhost:8080'); // 连接到 WebSocket 服务器
 
-export default defineComponent({
-  name: 'App',
-  setup() {
-
-  }
-})
+  // 设置回调处理接收到的消息
+  websocketService.onMessage((msg: string) => {
+    ElNotification({
+      // title: 'Success',
+      message: msg,
+      type: 'success',
+    })
+  });
+});
+// 组件卸载时关闭 WebSocket 连接
+onBeforeUnmount(() => {
+  websocketService.close();
+});
 </script>
 
 <style lang="scss">

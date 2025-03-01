@@ -18,26 +18,32 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { useRouter } from 'vue-router';  // 引入 useRouter
 import { encryptParam } from '@/common/encrypt.ts';
 import { setRefreshTokenInLocal, setTokenInLocal } from '@/common/keyAndToken.ts';
-import { login } from '@/services/login';
+import { login } from '@/services/user';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus'
 
-interface RuleForm {
+// 定义 User 接口
+interface User1 {
   email: string;
   pass: string;
 }
+interface User2 {
+  pass: string;
+  username: string;
+}
 
 export default defineComponent({
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Login',
   setup() {
     const router = useRouter();  // 使用 useRouter 获取 router 实例
 
     const ruleFormRef = ref<FormInstance>()
-    const ruleForm = reactive<RuleForm>({
+    const ruleForm = reactive<User1>({
       email: localStorage.getItem('user') || '',
       pass: ''
     })
-    const validPass = (_: any, value: any, callback: any) => {
+    const validPass = (_: unknown, value: string, callback: (error?: Error) => void) => {
       if (!value) {
         callback(new Error('请输入密码'))
       } else {
@@ -54,9 +60,9 @@ export default defineComponent({
       return regex.test(input);
     }
 
-    const onFinish = async (values: any) => {
-      const encrypted = await encryptParam(values);
-      const response: AxiosResponse = await login({ encrypted });
+    const onFinish = async (values: User1 | User2) => {
+      const encrypted = await encryptParam(values);  // 加密参数
+      const response: AxiosResponse = await login({ encrypted });  // 发送登录请求
       const data = response.data;
       if (data.success == false) {
         ElMessage.error(data.err);
@@ -65,10 +71,11 @@ export default defineComponent({
         ElMessage.success('登录成功');
         setTokenInLocal(data.token); // 将token存储到localStorage中
         setRefreshTokenInLocal(data.refreshToken); // 将refreshToken存储到localStorage中
-        if (values.email) {
-          localStorage.setItem('user', values.email); // 用于和token中携带的name比较判断用户登录状态
+        // 根据类型分别处理
+        if ('email' in values) {  // 判断 values 是否是 User1
+          localStorage.setItem('user', values.email); // 保存用户登录名称
         } else {
-          localStorage.setItem('user', values.username); // 用于和token中携带的name比较判断用户登录状态
+          localStorage.setItem('user', values.username); // 保存用户登录名称
         }
         router.push('/home');
       }
@@ -77,20 +84,20 @@ export default defineComponent({
       if (!formEl) return
       formEl.validate((valid: boolean) => {
         if (valid) {
-          let values = {}
+          let values: User1 | User2 = {} as User1 | User2;  // 显式指定 values 的类型
           if (isEmail(ruleForm.email)) {
             values = {
               email: ruleForm.email,
               pass: ruleForm.pass
             };
+            onFinish(values);
           } else {
             values = {
               username: ruleForm.email,
               pass: ruleForm.pass
             };
+            onFinish(values);
           }
-
-          onFinish(values);
         } else {
           ElMessage.error('输入格式不正确');
         }

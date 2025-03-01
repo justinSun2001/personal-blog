@@ -12,6 +12,7 @@ interface State {
   articleData: object[]; // 这里的类型根据实际需求调整
   recentArticles: object[]; // 最近文章列表
   scrollPosition: number; // 滚动位置
+  activeMenuKey: string; // 激活的菜单键
 }
 
 // 创建 Vuex Store
@@ -25,6 +26,7 @@ const store = createStore<State>({
     articleData: [], // 初始化为空数组
     recentArticles: [], // 最近文章列表
     scrollPosition: 0, // 滚动位置
+    activeMenuKey: '1', // 激活的菜单键
   },
   getters: {
     // Getters 需要指定返回值的类型
@@ -34,6 +36,7 @@ const store = createStore<State>({
     getArticleData: (state: State) => state.articleData, // 获取文章数据的 getter
     getRecentArticles: (state: State) => state.recentArticles, // 获取最近文章列表的 getter
     getScrollPosition: (state: State) => state.scrollPosition, // 获取滚动位置的 getter
+    getActiveMenuKey: (state: State) => state.activeMenuKey, // 获取激活的菜单键的 getter
   },
   mutations: {
     // Mutations 需要指定 state 的类型
@@ -65,6 +68,9 @@ const store = createStore<State>({
     setScrollPosition(state: State, scrollPosition: number) {
       state.scrollPosition = scrollPosition;
     },
+    setActiveMenuKey(state: State, activeMenuKey: string) {
+      state.activeMenuKey = activeMenuKey;
+    },
   },
   actions: {
     // 异步操作，获取文章数据并更新到 state
@@ -77,6 +83,10 @@ const store = createStore<State>({
       } catch (error) {
         console.error('Error fetching data:', error);
       }
+    },
+    updateActiveMenuKey({ commit }, key: string) {
+      console.log('key:', key);
+      commit('setActiveMenuKey', key);
     },
   },
   modules: {

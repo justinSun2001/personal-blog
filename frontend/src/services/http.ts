@@ -1,15 +1,22 @@
 import axios from 'axios';
-import type { InternalAxiosRequestConfig } from 'axios';
-import { handleNetErr, handleRequestHeader, handleAuth } from './httpTools';
+import type { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import { handleNetErr, handleAuth } from './httpTools';
 import { serviceConfig } from './config.ts';
 import { useRouter } from 'vue-router';
-interface watingQueueTyp {
-  resolve: (value: any) => void;
-  config: InternalAxiosRequestConfig<any>;
-}
+import { decodeNestedData } from '@/common/decodeHtml.ts';
 const router = useRouter();
-let isRefreshTokening = false;
+
+// 刷新token时的队列
+interface watingQueueTyp {
+  resolve: (value: Promise<AxiosResponse>) => void;
+  config: InternalAxiosRequestConfig;
+}
 const watingQueue: watingQueueTyp[] = [];
+
+// 是否正在刷新token
+let isRefreshTokening = false;
+
+// 初始化axios
 const { baseURL, useTokenAuthorization, timeout, withCredentials } = serviceConfig;
 const http = axios.create({
   baseURL,
@@ -17,44 +24,48 @@ const http = axios.create({
   withCredentials,
 });
 
+// 请求拦截器
 http.interceptors.request.use((config) => {
-  config = handleRequestHeader(config, {}); // 其他调整
   if (useTokenAuthorization) {
     config = handleAuth(config, isRefreshTokening); // 添加token
   }
-
   return config;
 });
 
+// 响应拦截器
 http.interceptors.response.use(
   (res) => {
+    console.log('响应拦截', res);
     if (res.status === 200 || res.status === 201) {
-      // handleAuthError(res);
+      // 处理返回数据
+      // 对文章内容进行解码
+      if (res.config.url === '/catalog/articles' || res.config.url?.includes('/catalog/articlesData')) {
+        res.data = decodeNestedData(res.data);
+      }
       return Promise.resolve(res.data);
     }
 
     return Promise.reject(res);
   },
   async (err) => {
-    console.log(err);
     const needRefreshToken = err.response.status === 401 && err.config.url !== '/user/refreshToken';
     if (needRefreshToken) {
       return await silentTokenRefresh(err);
     }
     handleNetErr(err);
-
+    console.log('错误响应拦截', err);
     return Promise.reject(err);
   }
 );
 
 export default http;
 
-import { getRefreshToken } from '../services/login.ts';
+import { getRefreshToken } from './user.ts';
 import { setRefreshTokenInLocal, setTokenInLocal } from '@/common/keyAndToken.ts';
 
 // 无感刷新token
-async function silentTokenRefresh(err: any) {
-  const { config } = err;
+async function silentTokenRefresh(err: AxiosError) {
+  const config = err.config as InternalAxiosRequestConfig;
   if (!isRefreshTokening) {
     return await startRefresh(config);
   }
@@ -62,14 +73,14 @@ async function silentTokenRefresh(err: any) {
 }
 
 // 开始刷新token
-async function startRefresh(config: InternalAxiosRequestConfig<any>) {
+async function startRefresh(config: InternalAxiosRequestConfig) {
   await refreshToken();
   tryWatingRequest();
   return http(config); //该配置对应的请求第一次发现了token失效,直接重新发送
 }
 
 // 正在刷新token,将当前请求存储
-function waitingRefresh(config: InternalAxiosRequestConfig<any>) {
+function waitingRefresh(config: InternalAxiosRequestConfig) {
   return new Promise((resolve) => {
     //存储刷新期间失败的请求,返回一个新的promise,保持该次请求的状态为等待,不让这次请求结束,使结果正确返回至对应的请求发出点
     watingQueue.push({ config, resolve });

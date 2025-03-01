@@ -26,10 +26,6 @@ export interface Article {
   genre: Genre[];
   __v: number;
 }
-// 这是整个返回数据的接口
-export interface ArticleData {
-  article: Article;
-}
 
 // 定义 UseArticle 接口
 export interface UseArticle {
@@ -41,11 +37,14 @@ export interface UseArticle {
   id: string;
 }
 
+// 定义 Item 接口
 interface Item {
   _id: string;
 }
+// 定义 ItemArray 类型
 export type ItemArray = Item[];
 
+// 定义 ArticleList 接口
 export interface ArticleList {
   article_count: number;
   author_count: number;

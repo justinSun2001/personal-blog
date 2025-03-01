@@ -21,10 +21,13 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import http from '../services/http.ts';
+import { encryptParam } from '@/common/encrypt.ts';
+import { register } from '@/services/user';
+import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus'
 
-interface RuleForm {
+
+interface RegisterForm {
   email: string;
   username: string;
   pass: string;
@@ -32,16 +35,17 @@ interface RuleForm {
 }
 
 export default defineComponent({
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Register',
   setup(_, { emit }) {  // 这里通过 destructuring 获取 emit
     const ruleFormRef = ref<FormInstance>()
-    const ruleForm = reactive<RuleForm>({
+    const ruleForm = reactive<RegisterForm>({
       email: '',
       username: '',
       pass: '',
       checkPass: ''
     })
-    const validPass = (_: any, value: any, callback: any) => {
+    const validPass = (_: unknown, value: string, callback: (error?: Error) => void) => {
       if (!value) {
         callback(new Error('请输入密码'))
       } else {
@@ -56,7 +60,7 @@ export default defineComponent({
         callback()
       }
     }
-    const checkPass = (_: any, value: string, callback: Function) => {
+    const checkPass = (_: unknown, value: string, callback: (error?: Error) => void) => {
       if (value === '') {
         callback(new Error('请再次输入密码'));
       } else if (value !== ruleForm.pass) {
@@ -86,27 +90,31 @@ export default defineComponent({
         }
       ]
     })
-
+    const onFinish = async (values: RegisterForm) => {
+      const encrypted = await encryptParam(values);  // 加密参数
+      const response: AxiosResponse = await register({ encrypted });  // 发送登录请求
+      const data = response.data;
+      if (data.success == false) {
+        ElMessage.error(data.err);
+        return;
+      } else if (data.success == true) {
+        ElMessage.success(data.message);
+        localStorage.setItem('user', values.email); // 保存用户登录名称
+        emit('changeActive');
+      }
+    }
     const submitForm = (formEl: FormInstance | undefined) => {
       if (!formEl) return
       if (formEl) {
         formEl.validate((valid: boolean) => {
           if (valid) {
-            // 创建 FormData 对象
-            const formData = new FormData();
-            formData.append('email', ruleForm.email);
-            formData.append('username', ruleForm.username);
-            formData.append('pass', ruleForm.pass);
-            // Simulate registration request
-            http.post('/user/register', formData)
-              .then((response: any) => {
-                ElMessage.success('注册成功，请登录!');
-                console.log(response);
-                emit('changeActive');
-              })
-              .catch(function (error) {
-                ElMessage.error(error.response.data.message);
-              });
+            const values = {
+              email: ruleForm.email,
+              username: ruleForm.username,
+              pass: ruleForm.pass,
+              checkPass: ruleForm.checkPass
+            }
+            onFinish(values);
           } else {
             ElMessage.error("输入表单数据有误，请检查");
           }

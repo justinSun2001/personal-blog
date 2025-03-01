@@ -49,6 +49,63 @@ const routes: RouteRecordRaw[] = [
     name: 'About',
     component: () => import('@/views/About.vue'),
   },
+  {
+    path: '/userdata/',
+    name: 'UserData',
+    component: () => import('@/views/UserData.vue'),
+    children: [
+      {
+        path: 'datahome',
+        name: 'DataHome',
+        component: () => import('@/components/userdata/DataHome.vue'),
+      },
+      {
+        path: 'articlelist',
+        name: 'ArticleList',
+        component: () => import('@/components/userdata/ArticleList.vue'),
+      },
+      {
+        path: 'authorlist',
+        name: 'Authorlist',
+        component: () => import('@/components/userdata/AuthorList.vue'),
+      },
+      {
+        path: 'genrelist',
+        name: 'GenreList',
+        component: () => import('@/components/userdata/GenreList.vue'),
+      },
+      {
+        path: 'article/:id',
+        name: 'ArticleDetail',
+        component: () => import('@/components/userdata/ArticleDetail.vue'),
+      },
+      {
+        path: 'author/:id',
+        name: 'AuthorDetail',
+        component: () => import('@/components/userdata/AuthorDetail.vue'),
+      },
+      {
+        path: 'genre/:id',
+        name: 'GenreDetail',
+        component: () => import('@/components/userdata/GenreDetail.vue'),
+      },
+      {
+        path: 'addarticle',
+        name: 'AddArticle',
+        component: () => import('@/components/userdata/AddArticle.vue'),
+      },
+      {
+        path: 'addauthor',
+        name: 'AddAuthor',
+        component: () => import('@/components/userdata/AddAuthor.vue'),
+      },
+      {
+        path: 'addgenre',
+        name: 'AddGenre',
+        component: () => import('@/components/userdata/AddGenre.vue'),
+      },
+    ],
+  },
 ];
 
 const router = createRouter({

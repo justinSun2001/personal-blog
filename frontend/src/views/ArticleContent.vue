@@ -32,8 +32,7 @@ import http from '@/services/http';
 import SideContent from '@/components/SideContent.vue';
 import MarkdownIt from 'markdown-it'
 import TopBar from '@/components/TopBar.vue';
-import type { ArticleData } from "@/types/index";
-
+import type { Article } from "@/types/index";
 
 export default defineComponent({
   name: 'ArticleContent',
@@ -51,12 +50,12 @@ export default defineComponent({
     const fetchData = async () => {
       const _id = route.params.id;
       try {
-        const articleData: ArticleData = await http.get(`/catalog/articlesData/${_id}`);
-        title.value = articleData.article.title;
-        summary.value = articleData.article.summary;
-        date.value = articleData.article.date;
-        text.value = articleData.article.text;
-        imgUrl.value = `http://localhost:3000${articleData.article.path}`;
+        const articleData: Article = await http.get(`/catalog/articlesData/${_id}`);
+        title.value = articleData.title;
+        summary.value = articleData.summary;
+        date.value = articleData.date;
+        text.value = articleData.text;
+        imgUrl.value = `http://localhost:3000${articleData.path}`;
       }
       catch (error) {
         console.error('Error fetching data:', error);
@@ -115,7 +114,6 @@ export default defineComponent({
     .main {
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
     }
   }
 
@@ -138,15 +136,19 @@ export default defineComponent({
   text-align: right;
 }
 
-.img img {
+.img {
   width: 80%;
+  margin: 20px auto;
+
+  img {
+    width: 100%;
+  }
 }
 
 .head {
   width: 80%;
   color: brown;
   font-size: small;
-  margin-bottom: 25px;
 }
 
 @import '@/assets/styles/markdown.css';

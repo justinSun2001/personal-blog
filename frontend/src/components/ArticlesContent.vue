@@ -18,7 +18,7 @@ import { defineComponent, ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import http from '@/services/http'
-import type { ItemArray, ArticleData } from '@/types/index'
+import type { ItemArray, Article } from '@/types/index'
 
 export default defineComponent({
   name: 'ArticlesContent',
@@ -54,8 +54,8 @@ export default defineComponent({
       for (let i = total.value - 1; i >= 0; i--) {
         const res: ItemArray = await http.get('/catalog/articlesData')
         items.value[i] = res[i]._id;
-        const result: ArticleData = await http.get(`/catalog/articlesData/${items.value[i]}`)
-        summary.value[i] = result.article.summary;
+        const result: Article = await http.get(`/catalog/articlesData/${items.value[i]}`)
+        summary.value[i] = result.summary;
       }
     }
 
@@ -106,7 +106,9 @@ export default defineComponent({
   padding-left: 5px;
   height: 3em;
   line-height: 3em;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 a:hover {

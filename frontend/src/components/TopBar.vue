@@ -1,9 +1,17 @@
 <template>
   <div class="top_container">
     <div class="left">
-      <div class="user">
-        <img src="../assets/img/user.png" @click="logout" />
-      </div>
+      <el-dropdown>
+        <span class="user">
+          <img src="../assets/img/user.png" />
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="ManageData()">管理数据</el-dropdown-item>
+            <el-dropdown-item @click="logout()">登出</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
     <ul class="nav">
       <li><a :class="{ a1: inUse1 }" @click="getHome"> HOME </a></li>
@@ -15,7 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -29,7 +36,9 @@ defineProps<{
 
 const router = useRouter();
 const store = useStore(); // Vuex 访问状态
-
+const ManageData = () => {
+  router.push(`/userdata/datahome`);
+}
 const logout = () => {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
