@@ -31,20 +31,15 @@ import HeadContent from "@/components/HeadContent.vue";
 import SideContent from "@/components/SideContent.vue";
 import BottomContent from "@/components/BottomContent.vue";
 
-import type { Article, ItemArray, UseArticle } from "@/types/index";
-
+import type { myArticle } from "@/types/index";
 const store = useStore();
 // 请求数据
 const fetchArticles = async () => {
   try {
-    const result: ItemArray = await http.get('/catalog/articlesData');
     const articleCount = store.state.articleCount;
     const currentPage = store.getters.getCurrentPage;
-    console.log("文章总数1", articleCount);
-    console.log("当前页1", currentPage);
 
     const startIndex = articleCount - (Number(currentPage) * 3 - 2);
-
     // 这里可以使用一个数组来存储请求的文章
     const requestedIndexes = [];
     if (startIndex >= 2) {
@@ -59,28 +54,11 @@ const fetchArticles = async () => {
       }
     }
 
-    // 使用 Promise.all 来请求对应的文章数据
-    const articleDataList = await Promise.all(
-      requestedIndexes.map(async (index) => {
-        const article = result[index];
-        if (article) {
-          // 发送请求获取文章数据
-          const res: Article = await http.get(`/catalog/articlesData/${article._id}`);
-          const articleData = res;
-          return {
-            title: articleData.title,
-            summary: articleData.summary,
-            date: articleData.date,
-            path: articleData.path,
-            id: articleData._id,
-            genre: articleData.genre,
-          };
-        }
-      })
-    );
+    // 合并请求对应的文章数据(？用来创建唯一标识区分不同页的响应)
+    const articleDataList: myArticle[] = await http.post(`/catalog/articlesData?${currentPage}`, requestedIndexes);
 
     // 一旦所有请求都完成，将结果存储到 articleData 数组中
-    const articleData: UseArticle[] = articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
+    const articleData = articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
     store.commit("setArticleData", articleData);
 
     // 如果是第一页数据，存储到 Vuex
@@ -88,7 +66,7 @@ const fetchArticles = async () => {
       store.commit("setRecentArticles", articleData);
     } else if (currentPage === 1 && store.state.recentArticles.length) {
       // 获取当前 Vuex 中的 recentArticles
-      const currentArticles: Article[] = store.state.recentArticles;
+      const currentArticles: myArticle[] = store.state.recentArticles;
       // 检查文章是否发生变化
       articleData.forEach((newArticle, index) => {
         if (currentArticles[index] == null) {
@@ -105,7 +83,6 @@ const fetchArticles = async () => {
             store.commit("changeRecentArticles", { index, article: newArticle });
           }
         }
-
       });
     }
 
@@ -121,20 +98,12 @@ watch(
     if (newPage !== oldPage) {
       console.log("currentPage 变化了", oldPage, "=>", newPage);
       fetchArticles()
-      // .then(() => {
-      //   // DOM更新后恢复滚动
-      //   nextTick(() => {
-      //     const scrollPosition = store.getters.getScrollPosition;
-      //     console.log('滚动位置1', scrollPosition)
-      //     document.documentElement.scrollTo(0, scrollPosition)
-      //   })
-      // });
     }
 
     // 监听 articleCount 变化
     if (newCount !== oldCount) {
       console.log("articleCount 变化了", oldCount, "=>", newCount);
-      store.commit("setRecentArticles", []); // 清空最近文章
+      store.commit("setRecentArticles", []); // 清空最近文章(用于sidecontent的更新)
     }
   },
   { deep: true }
@@ -143,16 +112,14 @@ watch(
 
 // 生命周期钩子
 onMounted(() => {
-  store.dispatch("fetchData")
+  store.dispatch("fetchData")       // 获取文章总数等元数据
     .then(() => {
-      // 调用 fetchArticles 并确保它的所有异步请求都完成
       return fetchArticles();  // fetchArticles 函数返回一个 Promise
     })
     .then(() => {
       // DOM更新后恢复滚动
       nextTick(() => {
         const scrollPosition = store.getters.getScrollPosition;
-        console.log('滚动位置1', scrollPosition)
         document.documentElement.scrollTo(0, scrollPosition)
       })
     })
@@ -169,13 +136,11 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  height: calc(100vh - 54px); // 这里 54px 是 TopBar 的固定高度
 }
 
 .top {
   width: 100%;
   position: fixed;
-  background-color: white;
   z-index: 100;
 }
 

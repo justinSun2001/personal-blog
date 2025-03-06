@@ -27,7 +27,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { ref, defineAsyncComponent } from 'vue';
 
 // 异步组件导入

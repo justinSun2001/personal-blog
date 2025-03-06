@@ -7,6 +7,7 @@ import Article, { IArticle } from "../models/article";
 import Author, { IAuthor } from "../models/author";
 import Genre, { IGenre } from "../models/genre";
 import { sendToClients } from "../websocketServer";
+import crypto from "crypto";
 
 // Multer 配置
 const storage = multer.diskStorage({
@@ -54,16 +55,91 @@ export const article_list = (
     .catch(next);
 };
 
-// 获取所有文章的id
+// 获取指定索引的文章的部分所需数据
 export const article_list_data = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  const requestedIndexes: number[] = req.body; // 前端传递的索引数组
+
+  if (!Array.isArray(requestedIndexes) || requestedIndexes.length === 0) {
+    res.status(400).json({ error: "Invalid or empty index array" });
+    return;
+  }
   Article.find({}, "_id")
     .exec()
     .then((list_articles) => {
-      res.json(list_articles);
+      // 使用索引数组逐个查询文章，并确保返回顺序与请求一致
+      const selectedArticlesPromises = requestedIndexes.map((index) => {
+        return Article.findById(list_articles[index]._id, {
+          title: 1,
+          genre: 1,
+          summary: 1,
+          date: 1,
+          path: 1,
+        })
+          .populate("genre")
+          .exec(); // 根据 _id 查询每个文章
+      });
+
+      // 等待所有查询完成
+      return Promise.all(selectedArticlesPromises);
+    })
+    .then((selectedArticles) => {
+      // 创建一个 ETag（假设基于文章的 JSON 字符串计算）
+      const articlesJSON = JSON.stringify(selectedArticles);
+      const hash = crypto.createHash("md5");
+      hash.update(articlesJSON);
+      const etag = `"${hash.digest("hex")}"`;
+
+      // 获取客户端的 If-None-Match 请求头
+      const ifNoneMatch = req.headers["if-none-match"];
+
+      // 如果请求头中的 If-None-Match 与当前计算的 ETag 匹配，则返回 304 Not Modified
+      if (ifNoneMatch === etag) {
+        return res.status(304).end();
+      }
+
+      // 设置 ETag 响应头，暴露给前端
+      res.setHeader("ETag", etag);
+      res.setHeader("Access-Control-Expose-Headers", "ETag"); // 允许前端访问 ETag 响应头
+      // 返回选中的文章数据
+      res.json(selectedArticles);
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
+// 获取指定索引的文章的摘要部分数据
+export const summary_list_data = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const requestedIndexes: number[] = req.body; // 前端传递的索引数组
+
+  if (!Array.isArray(requestedIndexes) || requestedIndexes.length === 0) {
+    res.status(400).json({ error: "Invalid or empty index array" });
+    return;
+  }
+  Article.find({}, "_id")
+    .exec()
+    .then((list_summary) => {
+      // 使用索引数组逐个查询文章，并确保返回顺序与请求一致
+      const selectedSummaryPromises = requestedIndexes.map((index) => {
+        return Article.findById(list_summary[index]._id, {
+          summary: 1,
+        }).exec(); // 根据 _id 查询每个文章
+      });
+
+      // 等待所有查询完成
+      return Promise.all(selectedSummaryPromises);
+    })
+    .then((selectedSummary) => {
+      // 返回选中的文章数据
+      res.status(200).json(selectedSummary);
     })
     .catch((err) => {
       return next(err);

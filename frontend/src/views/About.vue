@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <top-bar :inUse4="true"></top-bar>
   <div class="about">
@@ -6,15 +7,11 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent} from 'vue'
+<script setup lang="ts">
 import SideContent from '@/components/SideContent.vue'
 import TopBar from '@/components/TopBar.vue'
 
-export default defineComponent({
-  name: 'AboutPage',
-  components: { SideContent, TopBar },
-})
+
 </script>
 
 <style lang="scss" scoped>

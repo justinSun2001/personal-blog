@@ -117,15 +117,15 @@ const checkTitle = (_: unknown, value: string, callback: (error?: Error) => void
   }
 }
 const checkSummary = (_: unknown, value: string, callback: (error?: Error) => void) => {
-  if (value.length < 20 || value.length > 100) {
-    callback(new Error(`标题长度在 20 到 100 个字符之间，当前字符数为${value.length}`));
+  if (value.length < 20 || value.length > 250) {
+    callback(new Error(`标题长度在 20 到 250 个字符之间，当前字符数为${value.length}`));
   } else {
     callback();
   }
 }
 const checkText = (_: unknown, value: string, callback: (error?: Error) => void) => {
-  if (value.length < 50 || value.length > 5000) {
-    callback(new Error(`正文长度在 50 到 5000 个字符之间，当前字符数为${value.length}`));
+  if (value.length < 50 || value.length > 15000) {
+    callback(new Error(`正文长度在 50 到 15000 个字符之间，当前字符数为${value.length}`));
   } else {
     callback();
   }

@@ -196,6 +196,18 @@ const click = () => {
 }
 useEventListener(el, 'click', click)
 
+
+
+// 引入 Vue 编译器
+import { compile } from '@vue/compiler-dom';
+
+const template = `<div><span>{{ msg }}</span></div>`;
+
+const { ast } = compile(template);
+
+console.log('AST树测试', ast); // 输出模板的 AST
+
+
 </script>
 
 <style lang="scss" scoped>

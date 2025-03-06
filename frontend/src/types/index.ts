@@ -26,24 +26,20 @@ export interface Article {
   genre: Genre[];
   __v: number;
 }
-
-// 定义 UseArticle 接口
-export interface UseArticle {
+// 定义 Article 接口
+export interface myArticle {
+  _id: string;
   title: string;
   summary: string;
   date: string;
-  path: string;
   genre: Genre[];
-  id: string;
+  path: string;
 }
-
-// 定义 Item 接口
-interface Item {
+// 定义 mySummary 接口
+export interface mySummary {
   _id: string;
+  summary: string;
 }
-// 定义 ItemArray 类型
-export type ItemArray = Item[];
-
 // 定义 ArticleList 接口
 export interface ArticleList {
   article_count: number;

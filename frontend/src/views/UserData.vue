@@ -1,12 +1,12 @@
 <template>
-  <div class="container">
+  <div class="level1container">
     <div class="top">
       <TopBar />
     </div>
-    <el-row class="main">
-      <el-col :span="4">
+    <div class="main">
+      <div class="left">
         <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" background-color="#545c64"
-          text-color="#fff" active-text-color="#ffd04b" height="100%" @select="handleSelect">
+          text-color="#fff" active-text-color="#ffd04b" @select="handleSelect">
           <el-menu-item index="1">
             <template #title>
               <span>主页</span>
@@ -41,11 +41,11 @@
             </el-menu-item>
           </el-sub-menu>
         </el-menu>
-      </el-col>
-      <el-col :span="20" class="main-content">
+      </div>
+      <div class="main-content">
         <router-view></router-view>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
     <div class="bottom">
       <BottomContent></BottomContent>
     </div>
@@ -83,7 +83,7 @@ const handleSelect = (key: string) => {
 
 </script>
 <style lang="scss" scoped>
-.container {
+.level1container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -100,15 +100,22 @@ const handleSelect = (key: string) => {
 .main {
   margin-top: 54px;
   flex: 1;
+  display: flex;
+  flex-direction: row;
+}
+
+.left {
+  width: 20%;
 }
 
 .el-menu-vertical-demo {
-  height: auto;
+  height: 100%;
   min-height: 100%;
 }
 
 .main-content {
-  padding-top: 20px;
+  width: 80%;
+  height: 100%;
   padding-left: 30px;
 }
 

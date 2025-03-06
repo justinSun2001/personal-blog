@@ -30,11 +30,10 @@ const routes: RouteRecordRaw[] = [
       keepAlive: true, // 需要被缓存
     },
   },
-
   {
-    path: '/articleList/:id',
-    name: 'Articles',
-    component: () => import('@/views/Articles.vue'),
+    path: '/articlelist',
+    // name: 'ArticleList',
+    component: () => import('@/views/ArticleList.vue'),
     meta: {
       keepAlive: true, // 需要被缓存
     },

@@ -85,7 +85,6 @@ const store = createStore<State>({
       }
     },
     updateActiveMenuKey({ commit }, key: string) {
-      console.log('key:', key);
       commit('setActiveMenuKey', key);
     },
   },

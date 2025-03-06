@@ -4,6 +4,7 @@ import { handleNetErr, handleAuth } from './httpTools';
 import { serviceConfig } from './config.ts';
 import { useRouter } from 'vue-router';
 import { decodeNestedData } from '@/common/decodeHtml.ts';
+import { storeDataToIndexedDB, getDataFromIndexedDB, getEtagFromIndexedDB } from './indexedDB.ts';
 const router = useRouter();
 
 // 刷新token时的队列
@@ -25,10 +26,22 @@ const http = axios.create({
 });
 
 // 请求拦截器
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(async (config) => {
+  // 获取当前请求的 URL
+  const url = config.url as string;
+  if (url.includes('/catalog/articlesData')) {
+    // 获取对应的 ETag
+    const etag = await getEtagFromIndexedDB(url);
+    if (etag) {
+      // 如果存在 ETag，则将其添加到请求头
+      config.headers['If-None-Match'] = etag;
+    }
+  }
+
   if (useTokenAuthorization) {
     config = handleAuth(config, isRefreshTokening); // 添加token
   }
+
   return config;
 });
 
@@ -37,9 +50,20 @@ http.interceptors.response.use(
   (res) => {
     console.log('响应拦截', res);
     if (res.status === 200 || res.status === 201) {
+      const newEtag = res.headers['etag'];
+      if (newEtag && res.config.url?.includes('/catalog/articlesData')) {
+        // 存储新的 ETag 和数据到 IndexedDB
+        storeDataToIndexedDB(res.config.url, res.data, newEtag);
+        console.log('缓存数据');
+      }
+
       // 处理返回数据
       // 对文章内容进行解码
-      if (res.config.url === '/catalog/articles' || res.config.url?.includes('/catalog/articlesData')) {
+      if (
+        res.config.url === '/catalog/articles' ||
+        res.config.url?.includes('/catalog/articlesData') ||
+        res.config.url?.includes('/catalog/summaryData')
+      ) {
         res.data = decodeNestedData(res.data);
       }
       return Promise.resolve(res.data);
@@ -52,6 +76,19 @@ http.interceptors.response.use(
     if (needRefreshToken) {
       return await silentTokenRefresh(err);
     }
+
+    if (err.response.status === 304) {
+      // 304 状态码表示资源未修改，直接返回本地缓存的数据
+      const cachedData = await getDataFromIndexedDB(err.config.url);
+      if (cachedData) {
+        console.log('使用缓存数据');
+        return Promise.resolve(cachedData);
+      } else {
+        console.log('没有缓存数据');
+        return Promise.reject(err);
+      }
+    }
+
     handleNetErr(err);
     console.log('错误响应拦截', err);
     return Promise.reject(err);
@@ -93,11 +130,10 @@ async function refreshToken() {
   try {
     // 调用 getRefreshToken()，并获取响应对象
     const response = await getRefreshToken();
-    console.log('Refresh token response:', response);
     // 检查响应的状态是否为成功（例如 200）
     if (response.status === 200) {
       const { token, refreshToken } = response.data; // 从响应数据中提取 token 和 refreshToken
-      console.log('Refresh token successful:', token, refreshToken);
+      console.log('Refresh token successful');
       // 保存 token 和 refreshToken
       setTokenInLocal(token);
       setRefreshTokenInLocal(refreshToken);

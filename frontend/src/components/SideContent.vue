@@ -41,9 +41,9 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from "vue";
 import { useStore } from "vuex";
-import type { FormInstance, FormRules } from "element-plus";
+import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 import http from "@/services/http";
-import type { Genre, UseArticle } from "@/types/index";
+import type { Genre, Article } from "@/types/index";
 import bilibili from "@/assets/img/bilibili.png";
 import qq from "@/assets/img/qq.png";
 import github from "@/assets/img/github.png";
@@ -65,7 +65,7 @@ const socialLinks: SocialLink[] = [
 const formRef = ref<FormInstance>();
 const form = reactive({ email: "" });
 const rules = reactive<FormRules<typeof form>>({
-  email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: ["blur", "change"] }]
+  email: [{ required: true, message: '不允许空邮箱' }, { type: "email", message: "请输入正确的邮箱地址", trigger: ["blur", "change"] }]
 });
 
 const recentPosts = ref<string[]>([]);
@@ -73,8 +73,8 @@ const store = useStore();
 
 watch(
   () => store.getters.getRecentArticles,
-  (newValue: UseArticle[]) => {
-    recentPosts.value = newValue.map((item: UseArticle) => {
+  (newValue: Article[]) => {
+    recentPosts.value = newValue.map((item: Article) => {
       if (item.genre.length > 1) {
         const genreNames = item.genre.map((genre: Genre) => genre.name).join("/");
         return `${genreNames}: ${item.title}`;
@@ -96,10 +96,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
         await http.post("/user/email", new URLSearchParams(form.email));
         alert("Submit Success!");
       } catch (error) {
-        console.error("Submit failed", error);
+        ElMessage.error(`Submit failed ${error}`);
       }
     } else {
-      alert("Invalid Email Format!");
+      ElMessage.error("请检查输入");
     }
   });
 };

@@ -27,7 +27,12 @@ app.use(
     // origin: "*", // 允许所有源
     origin: "http://localhost:5173", // 允许特定的源
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "if-none-match",
+    ],
     credentials: true, // 允许携带 cookies 或认证信息
   })
 );

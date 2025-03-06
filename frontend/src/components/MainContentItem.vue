@@ -39,9 +39,9 @@ export default defineComponent({
       }
     })
     const imgClick = () => {
-      if (props.data.id) {
+      if (props.data._id) {
         router.push({
-          path: `/articles/${props.data.id}`,
+          path: `/articles/${props.data._id}`,
         });
       }
     };

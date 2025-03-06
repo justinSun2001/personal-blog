@@ -24,7 +24,6 @@
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { useStore } from "vuex";
 
 // 定义组件的 Props
 defineProps<{
@@ -35,7 +34,6 @@ defineProps<{
 }>();
 
 const router = useRouter();
-const store = useStore(); // Vuex 访问状态
 const ManageData = () => {
   router.push(`/userdata/datahome`);
 }
@@ -51,15 +49,15 @@ const getHome = () => {
 };
 
 const getArticles = () => {
-  router.push(`/articleList/${store.state.currentPage1}`);
+  router.push(`/articlelist`);
 };
 
 const getNbadata = () => {
-  router.push(`/nbadata/`);
+  router.push(`/nbadata`);
 };
 
 const getAbout = () => {
-  router.push(`/about/`);
+  router.push(`/about`);
 };
 </script>
 
