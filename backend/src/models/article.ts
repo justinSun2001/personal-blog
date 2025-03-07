@@ -1,8 +1,8 @@
-import mongoose, { Document, Schema, Types, Model } from 'mongoose';
+import mongoose, { Document, Schema, Types, Model } from "mongoose";
 
 // 定义 Article 文档接口
 export interface IArticle extends Document {
-  _id: Types.ObjectId;  // _id is an ObjectId by default
+  _id: Types.ObjectId; // _id is an ObjectId by default
   title: string;
   author: Types.ObjectId; // 这里的 author 是一个 ObjectId 类型，引用了 'Author' 模型
   summary: string;
@@ -16,20 +16,28 @@ export interface IArticle extends Document {
 // 创建 Schema
 const ArticleSchema = new Schema<IArticle>({
   title: { type: String, required: true },
-  author: { type: Schema.Types.ObjectId, ref: 'Author', required: true },
+  author: { type: Schema.Types.ObjectId, ref: "Author", required: true },
   summary: { type: String, required: true },
   text: { type: String, required: true },
   date: { type: String, required: true },
   path: { type: String },
-  genre: [{ type: Schema.Types.ObjectId, ref: 'Genre' }]
+  genre: [{ type: Schema.Types.ObjectId, ref: "Genre" }],
 });
 
 // 虚拟属性 'url'
-ArticleSchema.virtual('url').get(function(this: IArticle) {
-  return '/catalog/article/' + this._id;
+ArticleSchema.virtual("url").get(function (this: IArticle) {
+  return "/catalog/article/" + this._id;
 });
+// 保存前的钩子函数
+// ArticleSchema.pre("save", function () {
+//   console.log("Before save - Title:", this.title);
+//   console.log("Before save - Text:", this.text);
+// });
 
 // 导出模型
-const Article:Model<IArticle> = mongoose.model<IArticle>('Article', ArticleSchema);
+const Article: Model<IArticle> = mongoose.model<IArticle>(
+  "Article",
+  ArticleSchema
+);
 
 export default Article;

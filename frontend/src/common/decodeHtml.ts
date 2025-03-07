@@ -8,7 +8,6 @@ export function decodeHtmlEntity(encodedString: string): string {
 interface Article {
   title: string;
   summary: string;
-  text: string;
   [key: string]: unknown; // 其他字段，允许任意其他属性
 }
 // 递归处理嵌套数组或对象中的数据
@@ -19,7 +18,7 @@ export function decodeNestedData(data: Article[] | Article): unknown {
   } else if (typeof data === 'object' && data !== null) {
     // 如果是对象，遍历每个属性
     Object.keys(data).forEach((key) => {
-      if (key === 'title' || key === 'summary' || key === 'text') {
+      if (key === 'title' || key === 'summary') {
         // 如果属性名是 title 或 summary，进行解码
         data[key] = decodeHtmlEntity(data[key]);
       }

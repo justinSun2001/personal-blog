@@ -23,9 +23,18 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
-
+let cache = null as string | null;
 // 首页数据
 export const indexData = (req: Request, res: Response, next: NextFunction) => {
+  const clientETag = req.headers["if-none-match"];
+  // 1. 强制要求浏览器每次验证缓存
+  res.setHeader("Cache-Control", "no-cache");
+  console.log(`aaa[${req.method} ${req.path}] ETag: ${clientETag}`);
+  console.log(`bbb[${req.method} ${req.path}] ETag: ${cache}`);
+  if (cache && clientETag === cache) {
+    console.log("命中缓存"); // 命中缓存不起作用除了304都可以，304会变成200
+    return res.status(304).end();
+  }
   Promise.all([
     Article.countDocuments().exec(),
     Author.countDocuments().exec(),
@@ -36,6 +45,11 @@ export const indexData = (req: Request, res: Response, next: NextFunction) => {
         article_count: articleCount,
         author_count: authorCount,
         genre_count: genreCount,
+      });
+      // 获取并记录 ETag
+      res.on("finish", () => {
+        cache = res.getHeader("ETag") as string;
+        console.log(`[${req.method} ${req.path}] ETag: ${cache}`);
       });
     })
     .catch((err) => res.status(500).json({ error: err.message }));
@@ -201,7 +215,6 @@ export const article_create_post = (
       req.body.genres =
         typeof req.body.genres === "undefined" ? [] : [req.body.genres];
     }
-
     // 执行字段验证
     const validationChain = [
       body("title")
@@ -222,8 +235,7 @@ export const article_create_post = (
       body("text")
         .trim()
         .isLength({ min: 1 })
-        .withMessage("Text must not be empty.")
-        .escape(),
+        .withMessage("Text must not be empty."),
       body("date")
         .trim()
         .isLength({ min: 1 })
@@ -330,7 +342,6 @@ export const article_update_post = async (
     // 上传文件处理
     upload.single("pic")(req, res, async (err: any) => {
       if (err) return next(err); // 处理上传错误
-
       // 验证和清理字段
       await body("title", "Title must not be empty.")
         .trim()
