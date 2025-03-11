@@ -1,8 +1,5 @@
 <template>
   <div class="level1container">
-    <div class="top">
-      <TopBar />
-    </div>
     <div class="main">
       <div class="left">
         <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" background-color="#545c64"
@@ -46,19 +43,15 @@
         <router-view></router-view>
       </div>
     </div>
-    <div class="bottom">
-      <BottomContent></BottomContent>
-    </div>
   </div>
 </template>
 <script setup lang="ts">
-import TopBar from '@/components/TopBar.vue'
-import BottomContent from '@/components/BottomContent.vue'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 const router = useRouter()
 const store = useStore();
+
 // 从 Vuex 中获取当前激活的菜单项 key
 const activeIndex = computed(() => store.getters.getActiveMenuKey);
 const handleSelect = (key: string) => {
@@ -89,16 +82,7 @@ const handleSelect = (key: string) => {
   min-height: 100vh;
 }
 
-.top {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  background-color: white;
-  z-index: 100;
-}
-
 .main {
-  margin-top: 54px;
   flex: 1;
   display: flex;
   flex-direction: row;
@@ -117,14 +101,5 @@ const handleSelect = (key: string) => {
   width: 80%;
   height: 100%;
   padding-left: 30px;
-}
-
-.bottom {
-  text-align: center;
-  font-size: 10px;
-  width: 100%;
-  line-height: 40px;
-  color: black;
-  background-color: rgba(0, 0, 0, 0.177);
 }
 </style>

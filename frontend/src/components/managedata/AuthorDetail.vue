@@ -73,7 +73,7 @@ import http from '@/services/http';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { AxiosError } from 'axios';
-import AuthorItem from '@/components/userdata/AuthorItem.vue';
+import AuthorItem from './AuthorItem.vue';
 const route = useRoute();
 const router = useRouter();
 
@@ -102,8 +102,8 @@ const getAuthorData = async () => {
   try {
     // 发送 HTTP 请求获取作者数据
     const authorData: AuthorData = await http.get('/catalog/author/' + route.params.id);
-    Object.assign(author.value, authorData.author);
-    Object.assign(authorArticles.value, authorData.author_articles);
+    author.value = authorData.author;
+    authorArticles.value = authorData.author_articles;
     updateData.value = authorData.author;
   }
   catch (error) {

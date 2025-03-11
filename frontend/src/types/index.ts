@@ -39,6 +39,14 @@ export interface myArticle {
 export interface mySummary {
   _id: string;
   summary: string;
+  date: string;
+}
+// 定义 myGenre 接口
+export interface myGenre {
+  _id: string;
+  name: string;
+  checked?: boolean;
+  __v?: number;
 }
 // 定义 ArticleList 接口
 export interface ArticleList {

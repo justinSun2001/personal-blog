@@ -1,8 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="top">
-    <TopBar :in-use1="true"></TopBar>
-  </div>
   <div class="container">
     <div class="head">
       <HeadContent></HeadContent>
@@ -14,9 +11,6 @@
         <SideContent></SideContent>
       </div>
     </div>
-    <div class="bottom">
-      <BottomContent></BottomContent>
-    </div>
   </div>
 </template>
 
@@ -25,11 +19,10 @@ import { onMounted, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 import http from "@/services/http";
 
-import TopBar from "@/components/TopBar.vue";
-import MainContent from "@/components/MainContent.vue";
-import HeadContent from "@/components/HeadContent.vue";
+// import TopBar from "@/components/TopBar.vue";
+import MainContent from "@/components/homedata/MainContent.vue";
+import HeadContent from "@/components/homedata/HeadContent.vue";
 import SideContent from "@/components/SideContent.vue";
-import BottomContent from "@/components/BottomContent.vue";
 
 import type { myArticle } from "@/types/index";
 const store = useStore();
@@ -138,28 +131,9 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-.top {
-  width: 100%;
-  position: fixed;
-  z-index: 100;
-}
-
-.head {
-  padding-top: 54px;
-}
-
 .main {
   flex: 1;
   background-color: #f9f9fb;
-}
-
-.bottom {
-  text-align: center;
-  font-size: 10px;
-  width: 100%;
-  line-height: 40px;
-  color: black;
-  background-color: rgba(0, 0, 0, 0.177);
 }
 
 /* 响应式布局 */

@@ -1,11 +1,8 @@
 <template>
-  <div class="top">
-    <top-bar :inUse2="true" />
-  </div>
   <div class="page">
     <div class="head">
-      <el-select v-model="selectedGenre" placeholder="选择类别" style="width: 240px">
-        <el-option v-for="item in genres" :key="item._id" :label="item.name" :value="item.name" />
+      <el-select v-model="selectedGenreID" placeholder="选择类别" style="width: 240px">
+        <el-option v-for="item in genres" :key="item._id" :label="item.name" :value="item._id" />
       </el-select>
     </div>
     <div class="main">
@@ -20,25 +17,20 @@
         :current-page="currentPage" :page-size="pageSize" :total="total">
       </el-pagination>
     </div>
-    <div class="bottom">
-      <BottomContent></BottomContent>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import TopBar from '@/components/TopBar.vue'
-import BottomContent from '@/components/BottomContent.vue'
-import { ref, watch, computed, reactive } from 'vue'
+import { ref, watch, computed, reactive, onBeforeMount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import http from '@/services/http'
-import type { mySummary, Genre } from '@/types/index'
+import type { mySummary, myGenre } from '@/types/index'
 const router = useRouter()
 const store = useStore()
 
-const selectedGenre = ref('')
-const genres = ref<Genre[]>([])
+const selectedGenreID = ref('All')
+const genres = ref<myGenre[]>([])
 
 // Using refs to declare data variables
 const total = computed(() => store.getters.getArticleCount)
@@ -47,24 +39,27 @@ const pageSize = ref(14)
 
 const data = reactive<mySummary[]>([])
 
-// Method to fetch articles
 const fetchData = async () => {
-  const requestedIndexes: number[] = [];
-  // 获取分页的起始索引和结束索引
-  const startIndex = total.value - (currentPage.value - 1) * pageSize.value - 1;
-  const size = (total.value - (currentPage.value - 1) * pageSize.value) >= pageSize.value ? pageSize.value : total.value - (currentPage.value - 1) * pageSize.value;
-  // 生成请求的索引数组
-  for (let i = 0; i < size; i++) {
-    requestedIndexes.push(startIndex - i);
-  }
-  const result: mySummary[] = await http.post('/catalog/summaryData', requestedIndexes)
-  Object.assign(data, result)
-
+  const result: mySummary[] = await http.post('/catalog/summaryData', { currentPage: currentPage.value, pageSize: pageSize.value, selectedGenreID: selectedGenreID.value })
+  data.splice(0, data.length, ...result);
 }
 
+// 定义异步函数获取数据
+const getGenres = async () => {
+  try {
+    // 发送 HTTP 请求获取数据
+    const mygenres: myGenre[] = await http.get('/catalog/genres');
+    // 默认添加 "All" 选项，并将其设置为选中状态
+    const allOption: myGenre = { _id: 'All', name: 'All' };  // 假设 Genre 对象有 id 和 name 属性
+    genres.value = [allOption, ...mygenres]; // 将 "All" 选项添加到开头
+  } catch (error) {
+    // 处理请求错误
+    console.error('获取类别数据失败:', error);
+  }
+};
 
 // Watch for currentPage changes to refetch the data
-watch(() => ({ currentPage: currentPage.value, total: total.value }), fetchData, { immediate: true })
+watch(() => ({ currentPage: currentPage.value, total: total.value, selectedGenreID: selectedGenreID.value }), fetchData, { immediate: true })
 
 // Handling item click navigation
 const itemClick = (n: number) => {
@@ -78,15 +73,13 @@ const itemClick = (n: number) => {
 const handleCurrentChange = (currentPage: number) => {
   store.commit('setCurrentPage1', currentPage);
 }
+
+onBeforeMount(() => {
+  getGenres();
+})
 </script>
 
 <style lang="scss" scoped>
-.top {
-  width: 100%;
-  position: fixed;
-  z-index: 100;
-}
-
 .page {
   display: flex;
   flex-direction: column;
@@ -94,7 +87,6 @@ const handleCurrentChange = (currentPage: number) => {
 }
 
 .head {
-  padding-top: 54px;
   margin-top: 10px;
 }
 
@@ -131,14 +123,5 @@ a:hover {
 .pageIndex {
   text-align: center;
   margin-bottom: 30px;
-}
-
-.bottom {
-  text-align: center;
-  font-size: 10px;
-  width: 100%;
-  line-height: 40px;
-  color: black;
-  background-color: rgba(0, 0, 0, 0.177);
 }
 </style>

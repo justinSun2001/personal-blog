@@ -1,7 +1,4 @@
 <template>
-  <div class="top">
-    <TopBar></TopBar>
-  </div>
   <div v-if="title" class="page">
     <div class="main">
       <div class="title">
@@ -39,7 +36,6 @@ import { useRoute } from 'vue-router';
 import http from '@/services/http';
 import MarkdownIt from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor';
-import TopBar from '@/components/TopBar.vue';
 import type { Article } from "@/types/index";
 // Using ES6 import syntax
 import hljs from 'highlight.js/lib/core';
@@ -105,10 +101,10 @@ const extractHeadings = () => {
   const htmlDoc = parser.parseFromString(renderedMarkdown.value, 'text/html');
   const headingElements = htmlDoc.querySelectorAll('h1, h2, h3, h4, h5, h6');
   headings.value = Array.from(headingElements).map((element) => {
-    const firstChild = element.firstChild;
+    // const firstChild = element.firstChild; 
     let text = '';
-    if (firstChild && firstChild.textContent) {
-      text = firstChild.textContent.trim();
+    if (element && (element as HTMLElement).textContent) {
+      text = (element as HTMLElement)?.textContent?.trim() || '';
     }
     const level = parseInt(element.tagName.slice(1), 10);
     return {
@@ -199,14 +195,6 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.top {
-  width: 100%;
-  position: sticky;
-  top: 0;
-  background-color: white;
-  z-index: 100;
-}
-
 .page {
   margin: 0 18px;
   display: flex;

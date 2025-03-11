@@ -1,5 +1,7 @@
 <template>
-  @COPYRIGHT-JUSTIN
+  <div class="bottom">
+    @COPYRIGHT-JUSTIN
+  </div>
 </template>
 
 <script lang="ts">
@@ -11,5 +13,12 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-
+.bottom {
+  text-align: center;
+  font-size: 10px;
+  width: 100%;
+  line-height: 40px;
+  color: black;
+  background-color: rgba(0, 0, 0, 0.177);
+}
 </style>

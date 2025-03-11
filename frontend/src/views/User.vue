@@ -31,8 +31,8 @@
 import { ref, defineAsyncComponent } from 'vue';
 
 // 异步组件导入
-const Login = defineAsyncComponent(() => import('@/components/Login.vue'));
-const Register = defineAsyncComponent(() => import('@/components/Register.vue'));
+const Login = defineAsyncComponent(() => import('@/components/user/Login.vue'));
+const Register = defineAsyncComponent(() => import('@/components/user/Register.vue'));
 
 // 定义 reactive 数据
 const Active = ref(true);

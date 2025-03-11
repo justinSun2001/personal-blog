@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AuthorItem title="创建作者" v-model="formData" @submit="handleSubmit" />
+    <GenreItem title="创建类别" v-model="formData" @submit="handleSubmit" />
   </div>
 </template>
 
@@ -11,23 +11,19 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { AxiosError } from 'axios';
-import AuthorItem from '@/components/userdata/AuthorItem.vue'
+import GenreItem from './GenreItem.vue'
 const router = useRouter()
 const store = useStore();
 // 定义表单数据
 const formData = ref({
-  first_name: '',
-  family_name: '',
-  date_of_birth: '',
-  date_of_death: ''
+  name: '',
 });
-
 // 表单提交方法
 const handleSubmit = () => {
-  http.post('catalog/author/create', formData.value)
+  http.post('catalog/genre/create', formData.value)
     .then(() => {
-      ElMessage.success('作者创建成功')
-      router.push('/userdata/authorlist')
+      ElMessage.success('类别创建成功')
+      router.push('/userdata/genrelist')
     })
     .catch((error) => {
       if (error instanceof AxiosError && error.response) {
@@ -39,7 +35,7 @@ const handleSubmit = () => {
 };
 
 onMounted(() => {
-  store.dispatch('updateActiveMenuKey', '3-2')
+  store.dispatch('updateActiveMenuKey', '3-3')
 })
 </script>
 

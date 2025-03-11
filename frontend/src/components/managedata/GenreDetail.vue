@@ -73,7 +73,7 @@ import http from '@/services/http';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { AxiosError } from 'axios';
-import GenreItem from '@/components/userdata/GenreItem.vue';
+import GenreItem from './GenreItem.vue';
 const route = useRoute();
 const router = useRouter();
 
@@ -100,8 +100,8 @@ const getGenreData = async () => {
   try {
     // 发送 HTTP 请求获取类别数据
     const genreData: GenreData = await http.get('/catalog/genre/' + route.params.id);
-    Object.assign(genre.value, genreData.genre);
-    Object.assign(genreArticles.value, genreData.genre_articles);
+    genre.value = genreData.genre
+    genreArticles.value = genreData.genre_articles
     updateData.value.name = genre.value.name;
   }
   catch (error) {

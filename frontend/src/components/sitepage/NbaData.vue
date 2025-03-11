@@ -1,7 +1,4 @@
 <template>
-  <div class="top">
-    <TopBar :in-use3="true" />
-  </div>
   <div style="margin-top: 54px;">
     <p>计数器:{{ count }}</p>
     <button @click="increment">+</button>
@@ -29,7 +26,7 @@
     <h3>{{ currentPage }}</h3>
     <div v-loading="loading" element-loading-text="Loading..." style="display: inline-block;">
       <button v-for="page in totalPages" :key="page" style="cursor: pointer; " @click="handlePageChange(page)">{{ page
-        }}</button>
+      }}</button>
     </div>
 
     <h2>reactive结构赋值</h2>
@@ -50,7 +47,6 @@
 import { reactive, ref, toRefs, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
 import { WebSocketService } from '@/services/websocket';
 // import { debounce, throttle } from 'lodash'; // 引入 lodash 库中的防抖函数
-import TopBar from '@/components/TopBar.vue'
 import { useEventListener } from '@/hooks/useEventListener';
 const count = ref(0)
 const count2 = ref(0)
@@ -211,14 +207,6 @@ console.log('AST树测试', ast); // 输出模板的 AST
 </script>
 
 <style lang="scss" scoped>
-.top {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  background-color: white;
-  z-index: 100;
-}
-
 .circle {
   width: 300px;
   height: 300px;

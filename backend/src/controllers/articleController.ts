@@ -26,15 +26,15 @@ const upload = multer({ storage });
 let cache = null as string | null;
 // 首页数据
 export const indexData = (req: Request, res: Response, next: NextFunction) => {
-  const clientETag = req.headers["if-none-match"];
-  // 1. 强制要求浏览器每次验证缓存
-  res.setHeader("Cache-Control", "no-cache");
-  console.log(`aaa[${req.method} ${req.path}] ETag: ${clientETag}`);
-  console.log(`bbb[${req.method} ${req.path}] ETag: ${cache}`);
-  if (cache && clientETag === cache) {
-    console.log("命中缓存"); // 命中缓存不起作用除了304都可以，304会变成200
-    return res.status(304).end();
-  }
+  // const clientETag = req.headers["if-none-match"];
+  // // 1. 强制要求浏览器每次验证缓存
+  // res.setHeader("Cache-Control", "no-cache");
+  // console.log(`aaa[${req.method} ${req.path}] ETag: ${clientETag}`);
+  // console.log(`bbb[${req.method} ${req.path}] ETag: ${cache}`);
+  // if (cache && clientETag === cache) {
+  //   console.log("命中缓存"); // 命中缓存不起作用除了304都可以，304会变成200，但是他确实运行了下面的return
+  //   return res.status(304).end();
+  // }
   Promise.all([
     Article.countDocuments().exec(),
     Author.countDocuments().exec(),
@@ -46,11 +46,11 @@ export const indexData = (req: Request, res: Response, next: NextFunction) => {
         author_count: authorCount,
         genre_count: genreCount,
       });
-      // 获取并记录 ETag
-      res.on("finish", () => {
-        cache = res.getHeader("ETag") as string;
-        console.log(`[${req.method} ${req.path}] ETag: ${cache}`);
-      });
+      // // 获取并记录 ETag
+      // res.on("finish", () => {
+      //   cache = res.getHeader("ETag") as string;
+      //   console.log(`[${req.method} ${req.path}] ETag: ${cache}`);
+      // });
     })
     .catch((err) => res.status(500).json({ error: err.message }));
 };
@@ -132,28 +132,25 @@ export const summary_list_data = (
   res: Response,
   next: NextFunction
 ): void => {
-  const requestedIndexes: number[] = req.body; // 前端传递的索引数组
+  const currentPage = req.body.currentPage; // 前端传递的当前页码
+  const pageSize = req.body.pageSize; // 前端传递的每页数量
+  const selectedGenreID = req.body.selectedGenreID; // 前端传递的当前类别
 
-  if (!Array.isArray(requestedIndexes) || requestedIndexes.length === 0) {
-    res.status(400).json({ error: "Invalid or empty index array" });
-    return;
+  // 计算跳过的记录数
+  const skip = (currentPage - 1) * pageSize;
+  let query = {};
+  if (selectedGenreID !== "All") {
+    query = { genre: selectedGenreID }; // 如果选择了特定类别
   }
-  Article.find({}, "_id")
+
+  Article.find(query, "summary date")
+    .sort({ date: -1 }) // 按照 date 字段倒序排列 (-1 表示降序)
+    .skip(skip) // 跳过前面 skip 条数据
+    .limit(pageSize) // 限制返回 pageSize 条数据
     .exec()
     .then((list_summary) => {
-      // 使用索引数组逐个查询文章，并确保返回顺序与请求一致
-      const selectedSummaryPromises = requestedIndexes.map((index) => {
-        return Article.findById(list_summary[index]._id, {
-          summary: 1,
-        }).exec(); // 根据 _id 查询每个文章
-      });
-
-      // 等待所有查询完成
-      return Promise.all(selectedSummaryPromises);
-    })
-    .then((selectedSummary) => {
-      // 返回选中的文章数据
-      res.status(200).json(selectedSummary);
+      // 获取总数
+      return res.json(list_summary);
     })
     .catch((err) => {
       return next(err);

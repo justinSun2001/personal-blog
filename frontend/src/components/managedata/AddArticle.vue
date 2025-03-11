@@ -34,8 +34,8 @@ const myFormData = ref({
 
 const getInitialData = async () => {
   const initialData: InitialData = await http.get('catalog/article/create');
-  Object.assign(myFormData.value.sortedAuthors, initialData.authors);
-  Object.assign(myFormData.value.genres, initialData.genres);
+  myFormData.value.sortedAuthors = initialData.authors;
+  myFormData.value.genres = initialData.genres;
 }
 
 const handleSubmit = () => {
