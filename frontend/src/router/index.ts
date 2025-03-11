@@ -13,66 +13,94 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/User.vue'),
   },
   {
-    path: '/articles/:id',
-    name: 'ArticleContent',
-    component: () => import('@/components/sitepage/ArticleContent.vue'),
-    props: true, // 将 id 参数作为 prop 传递给组件
-  },
-  {
     path: '/home',
-    name: 'Home',
+    name: 'Home', // 路由名称
+    redirect: '/homepage',
     component: () => import('@/views/SitePage.vue'),
     children: [
       {
-        path: '/userdata/datahome',
-        name: 'DataHome',
-        component: () => import('@/components/managedata/DataHome.vue'),
+        path: '/homepage',
+        name: 'HomePage',
+        component: () => import('@/components/sitepage/HomePage.vue'),
       },
       {
-        path: '/userdata/articlelist',
-        name: 'ArticleList',
-        component: () => import('@/components/managedata/ArticleList.vue'),
+        path: '/articlelists',
+        name: 'ArticleLists',
+        component: () => import('@/components/sitepage/ArticleLists.vue'),
       },
       {
-        path: '/userdata/authorlist',
-        name: 'Authorlist',
-        component: () => import('@/components/managedata/AuthorList.vue'),
+        path: '/nbadata',
+        name: 'NbaData',
+        component: () => import('@/components/sitepage/NbaData.vue'),
       },
       {
-        path: '/userdata/genrelist',
-        name: 'GenreList',
-        component: () => import('@/components/managedata/GenreList.vue'),
+        path: '/about',
+        name: 'About',
+        component: () => import('@/components/sitepage/About.vue'),
       },
       {
-        path: '/userdata/article/:id',
-        name: 'ArticleDetail',
-        component: () => import('@/components/managedata/ArticleDetail.vue'),
+        path: '/articles/:id',
+        name: 'ArticleContent',
+        component: () => import('@/components/sitepage/ArticleContent.vue'),
+        props: true, // 将 id 参数作为 prop 传递给组件
       },
       {
-        path: '/userdata/author/:id',
-        name: 'AuthorDetail',
-        component: () => import('@/components/managedata/AuthorDetail.vue'),
-      },
-      {
-        path: '/userdata/genre/:id',
-        name: 'GenreDetail',
-        component: () => import('@/components/managedata/GenreDetail.vue'),
-      },
-      {
-        path: '/userdata/addarticle',
-        name: 'AddArticle',
-        component: () => import('@/components/managedata/AddArticle.vue'),
-      },
-      {
-        path: '/userdata/addauthor',
-        name: 'AddAuthor',
-        component: () => import('@/components/managedata/AddAuthor.vue'),
-      },
-      {
-        path: '/userdata/addgenre',
-        name: 'AddGenre',
-        component: () => import('@/components/managedata/AddGenre.vue'),
-      },
+        path: '/userdata',
+        name: 'ManageUserData',
+        component: () => import('@/components/sitepage/ManageUserData.vue'),
+        children: [
+          {
+            path: '/userdata/datahome',
+            name: 'DataHome',
+            component: () => import('@/components/managedata/DataHome.vue'),
+          },
+          {
+            path: '/userdata/articlelist',
+            name: 'ArticleList',
+            component: () => import('@/components/managedata/ArticleList.vue'),
+          },
+          {
+            path: '/userdata/authorlist',
+            name: 'Authorlist',
+            component: () => import('@/components/managedata/AuthorList.vue'),
+          },
+          {
+            path: '/userdata/genrelist',
+            name: 'GenreList',
+            component: () => import('@/components/managedata/GenreList.vue'),
+          },
+          {
+            path: '/userdata/article/:id',
+            name: 'ArticleDetail',
+            component: () => import('@/components/managedata/ArticleDetail.vue'),
+          },
+          {
+            path: '/userdata/author/:id',
+            name: 'AuthorDetail',
+            component: () => import('@/components/managedata/AuthorDetail.vue'),
+          },
+          {
+            path: '/userdata/genre/:id',
+            name: 'GenreDetail',
+            component: () => import('@/components/managedata/GenreDetail.vue'),
+          },
+          {
+            path: '/userdata/addarticle',
+            name: 'AddArticle',
+            component: () => import('@/components/managedata/AddArticle.vue'),
+          },
+          {
+            path: '/userdata/addauthor',
+            name: 'AddAuthor',
+            component: () => import('@/components/managedata/AddAuthor.vue'),
+          },
+          {
+            path: '/userdata/addgenre',
+            name: 'AddGenre',
+            component: () => import('@/components/managedata/AddGenre.vue'),
+          },
+        ]
+      }
     ],
   },
 ];

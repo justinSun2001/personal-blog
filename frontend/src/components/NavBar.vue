@@ -2,7 +2,7 @@
   <div class="top_container">
     <div class="left">
       <el-dropdown>
-        <span class="user" :class="{ a1: inUse === 0 }">
+        <span class="user" :class="{ a1: inUse === '0' }">
           <img src="../assets/img/user.png" />
         </span>
         <template #dropdown>
@@ -14,10 +14,10 @@
       </el-dropdown>
     </div>
     <ul class="nav">
-      <li><a :class="{ a1: inUse === 1 }" @click="onGetHome"> HOME </a></li>
-      <li><a :class="{ a1: inUse === 2 }" @click="onGetArticles"> ARTICLES </a></li>
-      <li><a :class="{ a1: inUse === 3 }" @click="onGetNbadata"> NBAData </a></li>
-      <li><a :class="{ a1: inUse === 4 }" @click="onGetAbout"> ABOUT </a></li>
+      <li><a :class="{ a1: inUse === '1' }" @click="onGetHome"> HOME </a></li>
+      <li><a :class="{ a1: inUse === '2' }" @click="onGetArticles"> ARTICLES </a></li>
+      <li><a :class="{ a1: inUse === '3' }" @click="onGetNbadata"> NBAData </a></li>
+      <li><a :class="{ a1: inUse === '4' }" @click="onGetAbout"> ABOUT </a></li>
     </ul>
   </div>
 </template>
@@ -28,7 +28,7 @@ import { defineProps, defineEmits } from 'vue';
 
 // 定义传入的 props
 defineProps<{
-  inUse?: number;
+  inUse?: string;
 }>();
 
 // 定义事件

@@ -46,7 +46,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 const router = useRouter()
@@ -73,7 +73,9 @@ const handleSelect = (key: string) => {
   // 更新 Vuex 中的激活菜单项 key
   store.dispatch('updateActiveMenuKey', key);
 }
-
+onMounted(() => {
+  handleSelect(activeIndex.value)
+})
 </script>
 <style lang="scss" scoped>
 .level1container {

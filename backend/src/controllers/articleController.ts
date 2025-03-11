@@ -313,10 +313,19 @@ export const article_delete_post = async (
       // 删除文件
       fs.unlink(filePath, (err) => {
         if (err) {
-          console.error("删除文件时出错:", err);
-          return res.status(500).json("删除文件时出错");
+          // 如果文件不存在，直接返回成功
+          if (err.code === 'ENOENT') {
+            console.log("文件不存在，无需删除");
+            return res.status(200).json("文件不存在，无需删除");
+          } else {
+            // 其他错误，返回错误信息
+            console.error("删除文件时出错:", err);
+            return res.status(500).json("删除文件时出错");
+          }
         } else {
+          // 文件删除成功
           console.log("文件删除成功");
+          return res.status(200).json("文件删除成功");
         }
       });
     }

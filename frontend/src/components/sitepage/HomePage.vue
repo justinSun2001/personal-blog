@@ -18,8 +18,6 @@
 import { onMounted, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 import http from "@/services/http";
-
-// import TopBar from "@/components/TopBar.vue";
 import MainContent from "@/components/homedata/MainContent.vue";
 import HeadContent from "@/components/homedata/HeadContent.vue";
 import SideContent from "@/components/SideContent.vue";

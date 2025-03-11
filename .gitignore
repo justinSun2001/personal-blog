@@ -27,4 +27,5 @@ dist-ssr
 .vscode
 
 backend/src/.env
-backend/src/public
+backend/src/public/photos
+backend/src/public/keys/.pem

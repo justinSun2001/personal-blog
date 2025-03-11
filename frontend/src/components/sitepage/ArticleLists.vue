@@ -21,11 +21,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, reactive, onBeforeMount } from 'vue'
+import { ref, watch, computed, reactive, onBeforeMount, onDeactivated, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import http from '@/services/http'
 import type { mySummary, myGenre } from '@/types/index'
+
 const router = useRouter()
 const store = useStore()
 
@@ -76,6 +77,14 @@ const handleCurrentChange = (currentPage: number) => {
 
 onBeforeMount(() => {
   getGenres();
+})
+
+onActivated(() => {
+  console.log('ArticleLists activated')
+})
+
+onDeactivated(() => {
+  console.log('ArticleLists deactivated') 
 })
 </script>
 
