@@ -26,6 +26,6 @@ dist-ssr
 .vite
 .vscode
 
-backend/src/.env
-backend/src/public/photos
-backend/src/public/keys/.pem
+/backend/src/.env
+/backend/src/public/photos
+/backend/src/public/keys/.pem
