@@ -7,12 +7,14 @@ interface State {
   currentPage: number;
   currentPage1: number;
   articleCount: number;
+  articleUpdate: boolean;
   authorCount: number;
   genreCount: number;
   articleData: object[]; // 这里的类型根据实际需求调整
   recentArticles: object[]; // 最近文章列表
   scrollPosition: number; // 滚动位置
   activeMenuKey: string; // 激活的菜单键
+  inUse: string; // 激活的导航栏
 }
 
 // 创建 Vuex Store
@@ -21,22 +23,26 @@ const store = createStore<State>({
     currentPage: 1,
     currentPage1: 1,
     articleCount: 0,
+    articleUpdate: false,
     authorCount: 0,
     genreCount: 0,
     articleData: [], // 初始化为空数组
     recentArticles: [], // 最近文章列表
     scrollPosition: 0, // 滚动位置
     activeMenuKey: '1', // 激活的菜单键
+    inUse: '1', // 激活的导航栏
   },
   getters: {
     // Getters 需要指定返回值的类型
     getCurrentPage: (state: State) => state.currentPage,
     getCurrentPage1: (state: State) => state.currentPage1,
     getArticleCount: (state: State) => state.articleCount,
+    getArticleUpdate: (state: State) => state.articleUpdate, // 获取文章更新状态的 getter
     getArticleData: (state: State) => state.articleData, // 获取文章数据的 getter
     getRecentArticles: (state: State) => state.recentArticles, // 获取最近文章列表的 getter
     getScrollPosition: (state: State) => state.scrollPosition, // 获取滚动位置的 getter
     getActiveMenuKey: (state: State) => state.activeMenuKey, // 获取激活的菜单键的 getter
+    getInUse: (state: State) => state.inUse, // 获取激活的导航栏的 getter
   },
   mutations: {
     // Mutations 需要指定 state 的类型
@@ -48,6 +54,9 @@ const store = createStore<State>({
     },
     setArticleCount(state: State, count: number) {
       state.articleCount = count;
+    },
+    setArticleUpdate(state: State, update: boolean) {
+      state.articleUpdate = update;
     },
     setAuthorCount(state: State, count: number) {
       state.authorCount = count;
@@ -61,15 +70,14 @@ const store = createStore<State>({
     setRecentArticles(state: State, recentArticles: object[]) {
       state.recentArticles = recentArticles; // 更新最近文章列表
     },
-    changeRecentArticles(state: State, payload: { index: number; article: object }) {
-      const { index, article } = payload;
-      state.recentArticles[index] = article; // 更新指定索引的文章
-    },
     setScrollPosition(state: State, scrollPosition: number) {
       state.scrollPosition = scrollPosition;
     },
     setActiveMenuKey(state: State, activeMenuKey: string) {
       state.activeMenuKey = activeMenuKey;
+    },
+    setInUse(state: State, inUse: string) {
+      state.inUse = inUse;
     },
   },
   actions: {

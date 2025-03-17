@@ -30,7 +30,7 @@
         更新
       </el-button>
       <el-dialog v-model="updateDialogVisible" top="54px" :before-close="handleUpdateClose">
-        <ArticleItem title="更新文章" v-model="myFormData" @submit="handleSubmit" />
+        <ArticleItem v-if="isDataLoaded" title="更新文章" v-model="myFormData" @submit="handleSubmit" />
       </el-dialog>
     </p>
     <hr />
@@ -69,7 +69,7 @@ import type { UploadFile } from 'element-plus'
 import ArticleItem from './ArticleItem.vue';
 const route = useRoute();
 const router = useRouter();
-
+const isDataLoaded = ref(false); // 用于控制数据加载完成标志
 interface InitialData {
   authors: Author[],
   genres: Genre[],
@@ -114,6 +114,8 @@ const getArticle = async () => {
   } catch (error) {
     ElMessage.error(`${error}`);
   }
+  // 数据加载完成后，设置标志为 true
+  isDataLoaded.value = true;
 };
 
 const editAuthor = (id: string) => {

@@ -3,8 +3,22 @@ import User, { IUser } from "../models/user";
 import { getPubKeyPem, privateDecrypt } from "../public/keys";
 import { generateToken, generateReFreshToken } from "../jwt";
 import bcrypt from "bcryptjs"; // 引入bcryptjs
+import { send } from "../email";
 // 扩展 Request 类型，添加 user 属性
 type User = { username: string } | { email: string };
+// 存储验证码的 Map，key 是邮箱，value 是验证码及过期时间
+const codeStorage: Map<string, { code: string; expireAt: number }> = new Map();
+
+const generateCode = (): string => {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    // 随机从 chars 中选择一个字符并拼接
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
 
 // 刷新token
 export const refresh_token = (
@@ -35,6 +49,8 @@ export const user_register = (
 ): void => {
   // 解密数据
   const { email, username, pass } = privateDecrypt(req.body.encrypted);
+  const code = req.body.code;
+
   // 检查 email 是否已存在
   User.findOne({ email })
     .then((existingUser) => {
@@ -55,6 +71,39 @@ export const user_register = (
             data: { err: "用户名已存在", success: false },
           });
         }
+        // 1. 验证验证码是否存在和匹配
+        const storedData = codeStorage.get(email) as {
+          code: string;
+          expireAt: number;
+        };
+
+        if (!storedData) {
+          res.send({
+            status: 400,
+            data: { err: "验证码不存在或已过期", success: false },
+          });
+        }
+
+        // 2. 检查验证码是否过期
+        if (Date.now() > storedData.expireAt) {
+          // 验证码过期，删除存储的验证码
+          codeStorage.delete(email);
+          res.send({
+            status: 400,
+            data: { err: "验证码已过期", success: false },
+          });
+        }
+
+        // 3. 检查验证码是否匹配
+        if (storedData.code.toLowerCase() !== code.toLowerCase()) {
+          res.send({
+            status: 400,
+            data: { err: "验证码不匹配", success: false },
+          });
+        }
+
+        // 验证通过后，删除验证码
+        codeStorage.delete(email);
         // 加密密码
         bcrypt.hash(pass, 10, (err, hashedPassword) => {
           if (err) {
@@ -153,16 +202,8 @@ export const user_list = (
     .then((user_list: IUser[]) => res.send(user_list))
     .catch((err) => next(err));
 };
-// callback 模式获取所有用户
-// export const user_list = (req: Request, res: Response, next: NextFunction): void => {
-//   const callback = req.query.callback; // 获取回调函数名
-//   User.find()
-//     .lean() // 避免 Mongoose Document 类型问题
-//     .exec()
-//     .then((user_list: IUser[]) => res.send(`${callback}(${JSON.stringify(user_list)})`))
-//     .catch((err) => next(err));
-// };
 
+// 获取公钥
 export const get_pubkey = (
   req: Request,
   res: Response,
@@ -175,4 +216,41 @@ export const get_pubkey = (
     err: null,
     success: true,
   });
+};
+
+// 获取验证码
+export const get_code = (req: Request, res: Response, next: NextFunction) => {
+  const email = req.body.email;
+  if (!email) {
+    return res.status(400).send({
+      data: null,
+      err: "Email is required",
+      status: 400,
+    });
+  }
+
+  // 生成验证码
+  const code = generateCode();
+  const expireAt = Date.now() + 5 * 60 * 1000; // 设置验证码 5 分钟后过期
+
+  // 存储验证码到 Map 中
+  codeStorage.set(email, { code, expireAt });
+
+  // 发送验证码邮件
+  send(email, code)
+    .then(() => {
+      res.send({
+        data: { message: "验证码已发送", success: true },
+        err: null,
+        status: 200,
+      });
+    })
+    .catch((err) => {
+      console.error("Error sending email:", err);
+      res.status(500).send({
+        data: { success: false },
+        err: "发送验证码失败",
+        status: 500,
+      });
+    });
 };

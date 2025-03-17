@@ -23,9 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
-
-
 // 定义传入的 props
 defineProps<{
   inUse?: string;

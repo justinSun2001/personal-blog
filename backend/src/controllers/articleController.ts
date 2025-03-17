@@ -132,12 +132,12 @@ export const summary_list_data = (
   res: Response,
   next: NextFunction
 ): void => {
-  const currentPage = req.body.currentPage; // 前端传递的当前页码
-  const pageSize = req.body.pageSize; // 前端传递的每页数量
+  // const currentPage = req.body.currentPage; // 前端传递的当前页码
+  // const pageSize = req.body.pageSize; // 前端传递的每页数量
   const selectedGenreID = req.body.selectedGenreID; // 前端传递的当前类别
 
   // 计算跳过的记录数
-  const skip = (currentPage - 1) * pageSize;
+  // const skip = (currentPage - 1) * pageSize;
   let query = {};
   if (selectedGenreID !== "All") {
     query = { genre: selectedGenreID }; // 如果选择了特定类别
@@ -145,8 +145,8 @@ export const summary_list_data = (
 
   Article.find(query, "summary date")
     .sort({ date: -1 }) // 按照 date 字段倒序排列 (-1 表示降序)
-    .skip(skip) // 跳过前面 skip 条数据
-    .limit(pageSize) // 限制返回 pageSize 条数据
+    // .skip(skip) // 跳过前面 skip 条数据
+    // .limit(pageSize) // 限制返回 pageSize 条数据
     .exec()
     .then((list_summary) => {
       // 获取总数
@@ -314,7 +314,7 @@ export const article_delete_post = async (
       fs.unlink(filePath, (err) => {
         if (err) {
           // 如果文件不存在，直接返回成功
-          if (err.code === 'ENOENT') {
+          if (err.code === "ENOENT") {
             console.log("文件不存在，无需删除");
             return res.status(200).json("文件不存在，无需删除");
           } else {

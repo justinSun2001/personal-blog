@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, nextTick } from "vue";
+import { onMounted, watch, nextTick, onActivated } from "vue";
 import { useStore } from "vuex";
 import http from "@/services/http";
 import MainContent from "@/components/homedata/MainContent.vue";
@@ -29,7 +29,10 @@ const fetchArticles = async () => {
   try {
     const articleCount = store.state.articleCount;
     const currentPage = store.getters.getCurrentPage;
-
+    if (currentPage === 1 && store.getters.getRecentArticles.length > 0 && !store.getters.getArticleUpdate) {
+      store.commit("setArticleData", store.getters.getRecentArticles);
+      return
+    }
     const startIndex = articleCount - (Number(currentPage) * 3 - 2);
     // 这里可以使用一个数组来存储请求的文章
     const requestedIndexes = [];
@@ -44,38 +47,39 @@ const fetchArticles = async () => {
         requestedIndexes.push(startIndex);
       }
     }
-
     // 合并请求对应的文章数据(？用来创建唯一标识区分不同页的响应)
     const articleDataList: myArticle[] = await http.post(`/catalog/articlesData?${currentPage}`, requestedIndexes);
-
     // 一旦所有请求都完成，将结果存储到 articleData 数组中
     const articleData = articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
     store.commit("setArticleData", articleData);
 
-    // 如果是第一页数据，存储到 Vuex
-    if (currentPage === 1 && !store.state.recentArticles.length) {
-      store.commit("setRecentArticles", articleData);
-    } else if (currentPage === 1 && store.state.recentArticles.length) {
-      // 获取当前 Vuex 中的 recentArticles
-      const currentArticles: myArticle[] = store.state.recentArticles;
-      // 检查文章是否发生变化
-      articleData.forEach((newArticle, index) => {
-        if (currentArticles[index] == null) {
-          store.commit("changeRecentArticles", { index, article: newArticle });
-        } else {
-          // 过滤出 title 或 genre 中的 name 发生变化的文章
-          const genreChanged = currentArticles[index].genre.some(existingGenre =>
-            newArticle.genre.some(newGenre =>
-              newGenre.name !== existingGenre.name
-            )
-          );
-          // 检查 title 是否相同
-          if (currentArticles[index].title !== newArticle.title || genreChanged) {
-            store.commit("changeRecentArticles", { index, article: newArticle });
-          }
-        }
-      });
+  } catch (err) {
+    console.error("获取文章数据失败", err);
+  }
+};
+// 请求数据
+const fetchRencentArticles = async () => {
+  try {
+    const articleCount = store.state.articleCount;
+    const startIndex = articleCount - 1;
+    // 这里可以使用一个数组来存储请求的文章
+    const requestedIndexes = [];
+    if (startIndex >= 2) {
+      // 如果 index 大于等于 2，按顺序请求 3 个文章
+      requestedIndexes.push(startIndex, startIndex - 1, startIndex - 2);
+    } else {
+      // 否则根据实际情况请求对应数量的文章
+      if (startIndex >= 1) {
+        requestedIndexes.push(startIndex, startIndex - 1);
+      } else {
+        requestedIndexes.push(startIndex);
+      }
     }
+    // 合并请求对应的文章数据(？用来创建唯一标识区分不同页的响应)
+    const articleDataList: myArticle[] = await http.post(`/catalog/articlesData?1`, requestedIndexes);
+    // 一旦所有请求都完成，将结果存储到 articleData 数组中
+    const articleData = articleDataList.filter(item => item !== undefined); // 确保移除任何 null 或 undefined 数据
+    store.commit("setRecentArticles", articleData);
 
   } catch (err) {
     console.error("获取文章数据失败", err);
@@ -86,26 +90,23 @@ watch(
   [() => store.getters.getCurrentPage, () => store.getters.getArticleCount], // 监听 currentPage 和 articleCount
   ([newPage, newCount], [oldPage, oldCount]) => {
     // 监听 currentPage 变化
-    if (newPage !== oldPage) {
-      console.log("currentPage 变化了", oldPage, "=>", newPage);
-      fetchArticles()
-    }
-
-    // 监听 articleCount 变化
     if (newCount !== oldCount) {
-      console.log("articleCount 变化了", oldCount, "=>", newCount);
-      store.commit("setRecentArticles", []); // 清空最近文章(用于sidecontent的更新)
+      fetchRencentArticles()
+    }
+    if ((newPage !== oldPage)) {
+      fetchArticles()
     }
   },
   { deep: true }
 );
 
-
 // 生命周期钩子
 onMounted(() => {
+  store.commit('setInUse', '1');
   store.dispatch("fetchData")       // 获取文章总数等元数据
     .then(() => {
-      return fetchArticles();  // fetchArticles 函数返回一个 Promise
+      fetchRencentArticles();  // fetchArticles 函数返回一个 Promise
+      fetchArticles();  // fetchArticles 函数返回一个 Promise
     })
     .then(() => {
       // DOM更新后恢复滚动
@@ -119,6 +120,17 @@ onMounted(() => {
     });
 });
 
+// Todo: 只对更新的数据进行重新获取
+onActivated(() => {
+  console.log('组件激活');
+  store.commit('setInUse', '1');
+  console.log(store.getters.getArticleUpdate);
+  if (store.getters.getArticleUpdate) {
+    console.log('有新文章更新了！');
+    fetchArticles()
+    store.commit("setArticleUpdate", false);
+  }
+})
 
 </script>
 

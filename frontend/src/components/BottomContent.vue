@@ -1,5 +1,5 @@
 <template>
-  <div class="bottom">
+  <div class="bottom-container">
     @COPYRIGHT-JUSTIN
   </div>
 </template>
@@ -13,7 +13,7 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-.bottom {
+.bottom-container {
   text-align: center;
   font-size: 10px;
   width: 100%;

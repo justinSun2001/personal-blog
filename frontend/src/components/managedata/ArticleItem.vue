@@ -54,12 +54,14 @@ import { ref, reactive } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus'
 import type { Genre } from '@/types/index';
 
+
 interface RuleForm {
   title: string;
   author: string;
   summary: string;
   text: string;
   date: string;
+
   genres: Genre[];
 }
 
@@ -97,7 +99,8 @@ const props = defineProps({
   }
 });
 
-const article = ref({ ...props.modelValue });
+const article = ref(props.modelValue);
+
 const emits = defineEmits(['update:modelValue', 'submit']);
 
 const exceedError = () => {
@@ -124,8 +127,8 @@ const checkSummary = (_: unknown, value: string, callback: (error?: Error) => vo
   }
 }
 const checkText = (_: unknown, value: string, callback: (error?: Error) => void) => {
-  if (value.length < 50 || value.length > 15000) {
-    callback(new Error(`正文长度在 50 到 15000 个字符之间，当前字符数为${value.length}`));
+  if (value.length < 50 || value.length > 350000) {
+    callback(new Error(`正文长度在 50 到 35000 个字符之间，当前字符数为${value.length}`));
   } else {
     callback();
   }

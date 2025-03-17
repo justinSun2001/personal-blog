@@ -5,6 +5,7 @@ import {
   user_list,
   get_pubkey,
   refresh_token,
+  get_code,
 } from "../controllers/userController";
 import { authenticateRefreshToken } from "../jwt";
 
@@ -28,6 +29,11 @@ router.get("/", (req: Request, res: Response, next: NextFunction) => {
 router.get("/pubkey", (req: Request, res: Response, next: NextFunction) => {
   get_pubkey(req, res, next);
 });
+
+router.post("/code", (req: Request, res: Response, next: NextFunction) => {
+  get_code(req, res, next);
+});
+
 router.get(
   "/refreshToken",
   authenticateRefreshToken,

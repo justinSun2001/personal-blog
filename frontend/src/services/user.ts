@@ -12,3 +12,6 @@ export const register = (data: object) => {
 export const getRefreshToken = () => {
   return http.get('/user/refreshToken');
 };
+export const getCode = (data: object) => {
+  return http.post('/user/code', data);
+};

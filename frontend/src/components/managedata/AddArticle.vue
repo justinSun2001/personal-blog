@@ -1,5 +1,5 @@
 <template>
-  <ArticleItem title="创建文章" v-model="myFormData" @submit="handleSubmit" />
+  <ArticleItem v-if="isDataLoaded" title="创建文章" v-model="myFormData" @submit="handleSubmit" />
 </template>
 
 <script setup lang="ts">
@@ -20,7 +20,7 @@ interface InitialData {
   authors: Author[],
   genres: Genre[],
 }
-
+const isDataLoaded = ref(false); // 用于控制数据加载完成标志
 const myFormData = ref({
   title: '',
   author: '',
@@ -36,6 +36,8 @@ const getInitialData = async () => {
   const initialData: InitialData = await http.get('catalog/article/create');
   myFormData.value.sortedAuthors = initialData.authors;
   myFormData.value.genres = initialData.genres;
+  // 数据加载完成后，设置标志为 true
+  isDataLoaded.value = true;
 }
 
 const handleSubmit = () => {

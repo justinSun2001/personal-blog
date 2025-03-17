@@ -12,6 +12,14 @@
     <el-form-item prop="checkPass">
       <el-input type="password" v-model="ruleForm.checkPass" placeholder="确认密码" autocomplete="off"></el-input>
     </el-form-item>
+    <el-form-item>
+      <el-col :span="16">
+        <el-input type="text" v-model="ruleForm.code" placeholder="验证码" autocomplete="off"></el-input>
+      </el-col>
+      <el-col :span="8">
+        <el-button type="primary" @click="sendCode">获取</el-button>
+      </el-col>
+    </el-form-item>
     <el-button type="primary" @click="submitForm(ruleFormRef)">
       注册
     </el-button>
@@ -22,7 +30,7 @@
 import { defineComponent, reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { encryptParam } from '@/common/encrypt.ts';
-import { register } from '@/services/user';
+import { register, getCode } from '@/services/user';
 import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus'
 
@@ -32,6 +40,7 @@ interface RegisterForm {
   username: string;
   pass: string;
   checkPass: string;
+  code?: string;
 }
 
 export default defineComponent({
@@ -43,7 +52,8 @@ export default defineComponent({
       email: '',
       username: '',
       pass: '',
-      checkPass: ''
+      checkPass: '',
+      code: ''
     })
     const validPass = (_: unknown, value: string, callback: (error?: Error) => void) => {
       if (!value) {
@@ -88,11 +98,29 @@ export default defineComponent({
           validator: checkPass,
           trigger: 'blur'
         }
+      ],
+      code: [
+        { required: true, message: '请输入验证码', trigger: 'blur' }
       ]
     })
+    const sendCode = async () => {
+      if (ruleForm.email === '') {
+        ElMessage.error('请输入邮箱地址');
+        return;
+      }
+      try {
+        const response: AxiosResponse = await getCode({ email: ruleForm.email });  // 发送登录请求
+        if (response.data.success == true) {
+          ElMessage.success(response.data.message);
+        }
+      }
+      catch {
+        ElMessage.error('发送验证码失败');
+      }
+    }
     const onFinish = async (values: RegisterForm) => {
       const encrypted = await encryptParam(values);  // 加密参数
-      const response: AxiosResponse = await register({ encrypted });  // 发送登录请求
+      const response: AxiosResponse = await register({ encrypted, code: ruleForm.code });  // 发送登录请求
       const data = response.data;
       if (data.success == false) {
         ElMessage.error(data.err);
@@ -112,7 +140,7 @@ export default defineComponent({
               email: ruleForm.email,
               username: ruleForm.username,
               pass: ruleForm.pass,
-              checkPass: ruleForm.checkPass
+              checkPass: ruleForm.checkPass,
             }
             onFinish(values);
           } else {
@@ -126,7 +154,8 @@ export default defineComponent({
       ruleFormRef,
       ruleForm,
       rules,
-      submitForm
+      submitForm,
+      sendCode
     }
   }
 })

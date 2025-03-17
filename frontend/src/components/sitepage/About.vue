@@ -8,6 +8,12 @@
 
 <script setup lang="ts">
 import SideContent from '@/components/SideContent.vue'
+import { useStore } from 'vuex';
+import { onMounted } from 'vue';
+const store = useStore();
+onMounted(() => {
+  store.commit('setInUse', '4');
+})
 </script>
 
 <style lang="scss" scoped>

@@ -40,10 +40,11 @@ import type { Article } from "@/types/index";
 // Using ES6 import syntax
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
+import css from 'highlight.js/lib/languages/css';
 
 // Then register the languages you need
 hljs.registerLanguage('javascript', javascript);
-
+hljs.registerLanguage('css', css);
 const route = useRoute();
 const md = new MarkdownIt({
   linkify: true,

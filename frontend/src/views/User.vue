@@ -9,7 +9,7 @@
             <div class="moren" :class="{ active: Active }" @click="changeColor">
               登陆
             </div>
-            <div :class="{ active: !Active }" @click="changeColor">
+            <div class="moren" :class="{ active: !Active }" @click="changeColor">
               注册
             </div>
           </div>
@@ -66,6 +66,7 @@ const changeActive = () => {
 
 .moren {
   margin-right: 20px;
+  cursor: pointer;
 }
 
 .active {
@@ -106,7 +107,7 @@ a {
 
   .content {
     width: 750px;
-    height: 350px;
+    height: 400px;
     display: flex;
   }
 

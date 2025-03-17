@@ -1,11 +1,13 @@
 <template>
- <router-view></router-view>
+  <router-view></router-view>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue';
 import { WebSocketService } from '@/services/websocket';
 import { ElNotification } from 'element-plus'
+import { useStore } from 'vuex';
+const store = useStore();
 const websocketService = new WebSocketService();
 // 建立 WebSocket 连接
 onMounted(() => {
@@ -17,7 +19,13 @@ onMounted(() => {
       // title: 'Success',
       message: msg,
       type: 'success',
-    })
+    });
+    if (msg == '有新文章发布了！') {
+      store.dispatch("fetchData");
+    } else if (msg == '有新文章更新了！') {
+      console.log('有新文章更新了！');
+      store.commit("setArticleUpdate", true);
+    }
   });
 });
 // 组件卸载时关闭 WebSocket 连接

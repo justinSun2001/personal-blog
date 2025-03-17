@@ -75,6 +75,7 @@ const handleSelect = (key: string) => {
 }
 onMounted(() => {
   handleSelect(activeIndex.value)
+  store.commit('setInUse', '0');
 })
 </script>
 <style lang="scss" scoped>

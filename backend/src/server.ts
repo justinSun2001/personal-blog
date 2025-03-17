@@ -15,6 +15,7 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 import indexRouter from "./routes/index";
 import userRouter from "./routes/user";
 import catalogRouter from "./routes/catalog";
+
 import { authenticateToken } from "./jwt";
 
 // 初始化 Express
@@ -67,7 +68,6 @@ app.set("view engine", "pug");
 app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.use("/catalog", authenticateToken, catalogRouter);
-app.use("/catalog", catalogRouter);
 
 // ✅ 7. 处理 404 错误
 app.use((req: Request, res: Response, next: NextFunction) => {
