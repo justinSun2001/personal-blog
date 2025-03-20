@@ -120,7 +120,7 @@ onMounted(() => {
     });
 });
 
-// Todo: 只对更新的数据进行重新获取
+// Todo: 只对更新的数据进行重新获取以及如何通知如何更新（处理新增和更新）问题
 onActivated(() => {
   console.log('组件激活');
   store.commit('setInUse', '1');

@@ -181,6 +181,11 @@ export const user_login = (
         const refreshToken = generateReFreshToken(
           email ? { email } : { username }
         );
+        req.session.user = {
+          id: user._id,
+          username: username,
+          loginAt: new Date(),
+        };
         res.send({
           sataus: 200,
           data: { token, refreshToken, err: null, success: true },

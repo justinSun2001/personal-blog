@@ -35,6 +35,11 @@ export const indexData = (req: Request, res: Response, next: NextFunction) => {
   //   console.log("命中缓存"); // 命中缓存不起作用除了304都可以，304会变成200，但是他确实运行了下面的return
   //   return res.status(304).end();
   // }
+  console.log("1", req.session.user);
+  if (!req.session.user) {
+    res.status(401).send("cookie过期");
+    return;
+  }
   Promise.all([
     Article.countDocuments().exec(),
     Author.countDocuments().exec(),
@@ -126,7 +131,7 @@ export const article_list_data = (
     });
 };
 
-// 获取指定索引的文章的摘要部分数据
+// 获取指定种类的文章的摘要部分数据
 export const summary_list_data = (
   req: Request,
   res: Response,

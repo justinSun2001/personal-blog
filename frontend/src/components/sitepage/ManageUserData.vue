@@ -54,6 +54,7 @@ const store = useStore();
 
 // 从 Vuex 中获取当前激活的菜单项 key
 const activeIndex = computed(() => store.getters.getActiveMenuKey);
+
 const handleSelect = (key: string) => {
   if (key === '1') {
     router.push('/userdata/datahome')
@@ -70,13 +71,17 @@ const handleSelect = (key: string) => {
   } else if (key === '3-3') {
     router.push('/userdata/addgenre')
   }
+
   // 更新 Vuex 中的激活菜单项 key
   store.dispatch('updateActiveMenuKey', key);
+  console.log(key);
 }
+
 onMounted(() => {
-  handleSelect(activeIndex.value)
+  // handleSelect(activeIndex.value)
   store.commit('setInUse', '0');
 })
+
 </script>
 <style lang="scss" scoped>
 .level1container {

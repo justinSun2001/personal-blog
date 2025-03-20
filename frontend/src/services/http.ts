@@ -2,10 +2,10 @@ import axios from 'axios';
 import type { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import { handleNetErr, handleAuth } from './httpTools';
 import { serviceConfig } from './config.ts';
-import { useRouter } from 'vue-router';
+// 需要使用router的ts文件
+import router from '@/router/index.ts';
 import { decodeNestedData } from '@/common/decodeHtml.ts';
 import { storeDataToIndexedDB, getDataFromIndexedDB, getEtagFromIndexedDB } from './indexedDB.ts';
-const router = useRouter();
 
 // 刷新token时的队列
 interface watingQueueTyp {
@@ -72,8 +72,21 @@ http.interceptors.response.use(
     return Promise.reject(res);
   },
   async (err) => {
+    if (err.response.status === 401 && err.response.data === 'cookie过期') {
+      console.log('错误响应拦截', err);
+      // 使用 nextTick 确保 Vue 组件完成更新后再进行路由跳转
+      try {
+        await router.push('/user');
+      } catch (pushError) {
+        console.error('跳转到登录页时发生错误', pushError);
+        // 如果 push 出错，打印错误信息，避免影响后续代码
+      }
+      return Promise.reject(err);
+    }
+
     const needRefreshToken = err.response.status === 401 && err.config.url !== '/user/refreshToken';
     if (needRefreshToken) {
+      console.log('错误响应拦截111', err);
       return await silentTokenRefresh(err);
     }
 

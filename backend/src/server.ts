@@ -17,10 +17,11 @@ import userRouter from "./routes/user";
 import catalogRouter from "./routes/catalog";
 
 import { authenticateToken } from "./jwt";
+import { sessionA } from "./session";
 
 // 初始化 Express
 const app = express();
-
+app.use(sessionA);
 // ✅ 1. 统一 CORS 处理
 // 使用 cors 库，避免重复设置 Access-Control-Allow-Origin。
 app.use(

@@ -67,9 +67,11 @@ import { ElMessage } from 'element-plus';
 import { AxiosError } from 'axios';
 import type { UploadFile } from 'element-plus'
 import ArticleItem from './ArticleItem.vue';
+
 const route = useRoute();
 const router = useRouter();
 const isDataLoaded = ref(false); // 用于控制数据加载完成标志
+
 interface InitialData {
   authors: Author[],
   genres: Genre[],
@@ -88,9 +90,11 @@ const myFormData = ref({
   genres: [] as Genre[],
   fileList: [] as UploadFile[],
 })
+
 const path = ref('');
 const article = ref({} as Article);
 const selectedGenres = ref([] as Genre[]);
+
 const getArticle = async () => {
   try {
     const result: Article = await http.get(`/catalog/articlesData/${route.params.id}`);
@@ -121,6 +125,7 @@ const getArticle = async () => {
 const editAuthor = (id: string) => {
   router.push(`/userdata/author/${id}`);
 }
+
 const editGenre = (id: string) => {
   router.push(`/userdata/genre/${id}`);
 }
@@ -128,9 +133,11 @@ const editGenre = (id: string) => {
 const handleDeleteClose = () => {
   deleteDialogVisible.value = false;
 }
+
 const handleUpdateClose = () => {
   updateDialogVisible.value = false;
 }
+
 const handleConfirmDelete = async () => {
   try {
     await http.post('/catalog/article/' + article.value._id + '/delete');
@@ -194,9 +201,11 @@ const handleSubmit = () => {
       }
     });
 }
+
 const goBack = () => {
   router.go(-1);
 }
+
 onMounted(() => {
   getArticle();
 });
