@@ -99,8 +99,25 @@ const routes: RouteRecordRaw[] = [
             name: 'AddGenre',
             component: () => import('@/components/managedata/AddGenre.vue'),
           },
-        ]
-      }
+        ],
+      },
+      {
+        path: '/ocrsite',
+        name: 'OcrSite',
+        component: () => import('@/components/sitepage/ManageOcrData.vue'),
+        children: [
+          {
+            path: '/ocrsite/table',
+            name: 'OcrTable',
+            component: () => import('@/components/ocrsite/OcrTable.vue'),
+          },
+          {
+            path: '/ocrsite/caiji',
+            name: 'CaiJi',
+            component: () => import('@/components/ocrsite/CaiJi.vue'),
+          },
+        ],
+      },
     ],
   },
 ];

@@ -8,6 +8,7 @@
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item @click="onManageData()">管理数据</el-dropdown-item>
+            <el-dropdown-item @click="onManageOCRData()">快递单识别</el-dropdown-item>
             <el-dropdown-item @click="onLogout()">登出</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -29,11 +30,15 @@ defineProps<{
 }>();
 
 // 定义事件
-const emit = defineEmits(['getHome', 'getArticles', 'getNbadata', 'getAbout', 'manageData', 'logout']);
+const emit = defineEmits(['getHome', 'getArticles', 'getNbadata', 'getAbout', 'manageData', 'manageOCRData', 'logout']);
 
 
 const onManageData = () => {
   emit('manageData');
+};
+
+const onManageOCRData = () => {
+  emit('manageOCRData');
 };
 
 const onLogout = () => {

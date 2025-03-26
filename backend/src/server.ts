@@ -7,6 +7,7 @@ import cors from "cors";
 import createError from "http-errors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import mysql from "mysql2/promise"; // 引入 mysql2/promise 库
 import { startWebSocketServer } from "./websocketServer"; // 导入 WebSocket 服务器
 // 加载环境变量
 dotenv.config({ path: path.join(__dirname, ".env") });
@@ -15,6 +16,7 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 import indexRouter from "./routes/index";
 import userRouter from "./routes/user";
 import catalogRouter from "./routes/catalog";
+import ocrRouter from "./routes/ocr";
 
 import { authenticateToken } from "./jwt";
 import { sessionA } from "./session";
@@ -41,7 +43,17 @@ app.use(
 
 // ✅ 2. MongoDB 连接优化
 // 从 .env 文件中读取数据库连接配置信息
-const { DB_HOST, DB_USER, DB_PASS, DB_NAME, PORT } = process.env;
+const {
+  DB_HOST,
+  DB_USER,
+  DB_PASS,
+  DB_NAME,
+  PORT,
+  MYSQL_HOST,
+  MYSQL_USER,
+  MYSQL_PASSWORD,
+  MYSQL_DATABASE,
+} = process.env;
 // 构建 MongoDB 连接字符串
 const mongoDB = `mongodb://${DB_USER}:${DB_PASS}@${DB_HOST}:27017/${DB_NAME}`;
 
@@ -52,6 +64,29 @@ mongoose
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB 连接错误："));
+
+// ✅ 添加 MySQL 数据库连接
+const mysqlConfig = {
+  host: MYSQL_HOST,
+  user: MYSQL_USER,
+  password: MYSQL_PASSWORD,
+  database: MYSQL_DATABASE,
+};
+
+const mysqlPool = mysql.createPool(mysqlConfig);
+
+mysqlPool
+  .getConnection()
+  .then((connection) => {
+    console.log("✅ MySQL 连接成功");
+    connection.release();
+  })
+  .catch((err) => {
+    console.error("❌ MySQL 连接错误:", err);
+  });
+
+// 将 MySQL 连接池挂载到 Express 应用上，方便在路由中使用
+app.set("mysqlPool", mysqlPool);
 
 // ✅ 3. 基础中间件
 app.use(logger("dev"));
@@ -69,6 +104,7 @@ app.set("view engine", "pug");
 app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.use("/catalog", authenticateToken, catalogRouter);
+app.use("/ocr", ocrRouter);
 
 // ✅ 7. 处理 404 错误
 app.use((req: Request, res: Response, next: NextFunction) => {

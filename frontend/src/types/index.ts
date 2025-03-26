@@ -54,3 +54,19 @@ export interface ArticleList {
   author_count: number;
   genre_count: number;
 }
+// 定义表单数据的类型
+export interface FormData {
+  id?: number;
+  型号1: string;
+  型号2: string;
+  标识: string;
+  版号: string;
+  片号: string;
+  检验批号: string;
+  生产批号: string;
+  备注: string;
+  目检合格数: string;
+  筛选单状态: string;
+  收费状态: string;
+  是否合检: string;
+}

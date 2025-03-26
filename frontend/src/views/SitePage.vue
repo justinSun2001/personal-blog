@@ -2,7 +2,7 @@
   <div class="sitepage">
     <div class="top">
       <NavBar :inUse="inUse" @getHome="getHome" @getArticles="getArticles" @getNbadata="getNbadata" @getAbout="getAbout"
-        @manageData="ManageData" @logout="logout" />
+        @manageData="ManageData" @manageOCRData="ManageOCRData" @logout="logout" />
     </div>
     <div class="content">
       <router-view v-slot="{ Component, route }">
@@ -35,6 +35,9 @@ watch(() => store.getters.getInUse, (newVal) => {
 const ManageData = () => {
   router.push('/userdata');
 };
+const ManageOCRData = () => {
+  router.push('/ocrsite');
+}
 const logout = () => {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
