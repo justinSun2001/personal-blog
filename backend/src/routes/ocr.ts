@@ -7,6 +7,9 @@ import {
   updateData,
   exportData,
   exportAll,
+  uploadPic,
+  uploadExcel,
+  addMultipleData,
 } from "../controllers/ocrController";
 
 const router = express.Router();
@@ -33,4 +36,19 @@ router.post("/export", (req: Request, res: Response, next: NextFunction) => {
 router.get("/exportAll", (req: Request, res: Response, next: NextFunction) => {
   exportAll(req, res, next);
 });
+router.post("/uploadPic", (req: Request, res: Response, next: NextFunction) => {
+  uploadPic(req, res, next);
+});
+router.post(
+  "/uploadExcel",
+  (req: Request, res: Response, next: NextFunction) => {
+    uploadExcel(req, res, next);
+  }
+);
+router.post(
+  "/multipleAdd",
+  (req: Request, res: Response, next: NextFunction) => {
+    addMultipleData(req, res, next);
+  }
+);
 export default router;

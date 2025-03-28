@@ -1,47 +1,45 @@
 <template>
-  <div class="level1container">
-    <div class="main">
-      <div class="left">
-        <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" background-color="#545c64"
-          text-color="#fff" active-text-color="#ffd04b" @select="handleSelect">
-          <el-menu-item index="1">
-            <template #title>
-              <span>主页</span>
-            </template>
+  <div class="main">
+    <div class="left">
+      <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" background-color="#545c64" text-color="#fff"
+        active-text-color="#ffd04b" @select="handleSelect">
+        <el-menu-item index="1">
+          <template #title>
+            <span>主页</span>
+          </template>
+        </el-menu-item>
+        <el-sub-menu index="2">
+          <template #title>
+            <span>管理</span>
+          </template>
+          <el-menu-item index="2-1">
+            <span>文章</span>
           </el-menu-item>
-          <el-sub-menu index="2">
-            <template #title>
-              <span>管理</span>
-            </template>
-            <el-menu-item index="2-1">
-              <span>文章</span>
-            </el-menu-item>
-            <el-menu-item index="2-2">
-              <span>作者</span>
-            </el-menu-item>
-            <el-menu-item index="2-3">
-              <span>类别</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="3">
-            <template #title>
-              <span>新建</span>
-            </template>
-            <el-menu-item index="3-1">
-              <span>文章</span>
-            </el-menu-item>
-            <el-menu-item index="3-2">
-              <span>作者</span>
-            </el-menu-item>
-            <el-menu-item index="3-3">
-              <span>类别</span>
-            </el-menu-item>
-          </el-sub-menu>
-        </el-menu>
-      </div>
-      <div class="main-content">
-        <router-view></router-view>
-      </div>
+          <el-menu-item index="2-2">
+            <span>作者</span>
+          </el-menu-item>
+          <el-menu-item index="2-3">
+            <span>类别</span>
+          </el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="3">
+          <template #title>
+            <span>新建</span>
+          </template>
+          <el-menu-item index="3-1">
+            <span>文章</span>
+          </el-menu-item>
+          <el-menu-item index="3-2">
+            <span>作者</span>
+          </el-menu-item>
+          <el-menu-item index="3-3">
+            <span>类别</span>
+          </el-menu-item>
+        </el-sub-menu>
+      </el-menu>
+    </div>
+    <div class="main-content">
+      <router-view></router-view>
     </div>
   </div>
 </template>
@@ -84,12 +82,6 @@ onMounted(() => {
 
 </script>
 <style lang="scss" scoped>
-.level1container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
 .main {
   flex: 1;
   display: flex;

@@ -1,25 +1,22 @@
 <template>
-  <div class="level1container">
-    <div class="main">
-      <div class="left">
-        <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" background-color="#545c64"
-          text-color="#fff" active-text-color="#ffd04b" @select="handleSelect">
-          <el-menu-item index="1">
-            <template #title>
-              <span>表格管理</span>
-            </template>
-          </el-menu-item>
-          <el-sub-menu index="2">
-            <template #title>
-              <span>采集管理</span>
-            </template>
-          </el-sub-menu>
-
-        </el-menu>
-      </div>
-      <div class="main-content">
-        <router-view></router-view>
-      </div>
+  <div class="main">
+    <div class="left">
+      <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" background-color="#545c64" text-color="#fff"
+        active-text-color="#ffd04b" @select="handleSelect">
+        <el-menu-item index="1">
+          <template #title>
+            <span>表格管理</span>
+          </template>
+        </el-menu-item>
+        <el-menu-item index="2">
+          <template #title>
+            <span>采集管理</span>
+          </template>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    <div class="main-content">
+      <router-view></router-view>
     </div>
   </div>
 </template>
@@ -40,18 +37,11 @@ const handleSelect = (key: string) => {
 }
 
 onMounted(() => {
-  // handleSelect(activeIndex.value)
-  store.commit('setInUse', '0');
+  store.commit('setInUse', '3');
 })
 
 </script>
 <style lang="scss" scoped>
-.level1container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
 .main {
   flex: 1;
   display: flex;
@@ -59,7 +49,7 @@ onMounted(() => {
 }
 
 .left {
-  width: 20%;
+  width: 150px;
 }
 
 .el-menu-vertical-demo {
@@ -68,8 +58,7 @@ onMounted(() => {
 }
 
 .main-content {
-  width: 80%;
+  flex: 1;
   height: 100%;
-  padding-left: 30px;
 }
 </style>

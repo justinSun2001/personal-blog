@@ -1,8 +1,8 @@
 <template>
   <div class="sitepage">
     <div class="top">
-      <NavBar :inUse="inUse" @getHome="getHome" @getArticles="getArticles" @getNbadata="getNbadata" @getAbout="getAbout"
-        @manageData="ManageData" @manageOCRData="ManageOCRData" @logout="logout" />
+      <NavBar :inUse="inUse" @getHome="getHome" @getArticles="getArticles" @getAbout="getAbout" @manageData="ManageData"
+        @manageOCRData="ManageOCRData" @logout="logout" />
     </div>
     <div class="content">
       <router-view v-slot="{ Component, route }">
@@ -35,9 +35,6 @@ watch(() => store.getters.getInUse, (newVal) => {
 const ManageData = () => {
   router.push('/userdata');
 };
-const ManageOCRData = () => {
-  router.push('/ocrsite');
-}
 const logout = () => {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
@@ -53,8 +50,8 @@ const getArticles = () => {
   router.push('/articlelists'); // 跳转到 "/home"
 };
 
-const getNbadata = () => {
-  router.push('/nbadata'); // 跳转到 "/home"
+const ManageOCRData = () => {
+  router.push('/ocrsite'); // 跳转到 "/home"
 };
 
 const getAbout = () => {
@@ -78,5 +75,7 @@ const getAbout = () => {
 .content {
   margin-top: 54px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 </style>

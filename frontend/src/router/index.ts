@@ -47,6 +47,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: '/userdata',
         name: 'ManageUserData',
+        redirect: '/userdata/datahome',
         component: () => import('@/components/sitepage/ManageUserData.vue'),
         children: [
           {
@@ -104,6 +105,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: '/ocrsite',
         name: 'OcrSite',
+        redirect: '/ocrsite/table',
         component: () => import('@/components/sitepage/ManageOcrData.vue'),
         children: [
           {

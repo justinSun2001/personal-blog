@@ -23,6 +23,7 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
 let cache = null as string | null;
 // 首页数据
 export const indexData = (req: Request, res: Response, next: NextFunction) => {

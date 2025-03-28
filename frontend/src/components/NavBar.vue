@@ -8,7 +8,6 @@
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item @click="onManageData()">管理数据</el-dropdown-item>
-            <el-dropdown-item @click="onManageOCRData()">快递单识别</el-dropdown-item>
             <el-dropdown-item @click="onLogout()">登出</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -17,7 +16,7 @@
     <ul class="nav">
       <li><a :class="{ a1: inUse === '1' }" @click="onGetHome"> HOME </a></li>
       <li><a :class="{ a1: inUse === '2' }" @click="onGetArticles"> ARTICLES </a></li>
-      <li><a :class="{ a1: inUse === '3' }" @click="onGetNbadata"> NBAData </a></li>
+      <li><a :class="{ a1: inUse === '3' }" @click="onGetOCRData"> OCRData </a></li>
       <li><a :class="{ a1: inUse === '4' }" @click="onGetAbout"> ABOUT </a></li>
     </ul>
   </div>
@@ -30,15 +29,11 @@ defineProps<{
 }>();
 
 // 定义事件
-const emit = defineEmits(['getHome', 'getArticles', 'getNbadata', 'getAbout', 'manageData', 'manageOCRData', 'logout']);
+const emit = defineEmits(['getHome', 'getArticles', 'getAbout', 'manageData', 'manageOCRData', 'logout']);
 
 
 const onManageData = () => {
   emit('manageData');
-};
-
-const onManageOCRData = () => {
-  emit('manageOCRData');
 };
 
 const onLogout = () => {
@@ -53,8 +48,8 @@ const onGetArticles = () => {
   emit('getArticles');
 };
 
-const onGetNbadata = () => {
-  emit('getNbadata');
+const onGetOCRData = () => {
+  emit('manageOCRData');
 };
 
 const onGetAbout = () => {

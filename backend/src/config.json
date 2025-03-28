@@ -1,0 +1,7 @@
+{
+  "pythonPath": {
+    "win32": "C:\\project\\venv\\Scripts\\python.exe",
+    "linux": "/Users/jutsinsun/Downloads/anaconda环境/anaconda3/envs/paddle_env/bin/python",
+    "darwin": "/Users/jutsinsun/Downloads/anaconda环境/anaconda3/envs/paddle_env/bin/python"
+  }
+}

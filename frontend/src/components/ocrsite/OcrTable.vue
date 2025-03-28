@@ -9,7 +9,7 @@
             <el-icon>
               <EditPen />
             </el-icon>
-            添加
+            手动添加
           </span>
         </template>
       </el-tab-pane>
@@ -27,9 +27,9 @@
         <template #label>
           <span class="custom-tabs-label" @click="handleTabClick('批量照片上传添加')">
             <el-icon>
-              <FolderOpened />
+              <PictureFilled />
             </el-icon>
-            批量照片上传添加
+            照片上传添加
           </span>
         </template>
       </el-tab-pane>
@@ -77,7 +77,7 @@
         <template #label>
           <span class="custom-tabs-label" @click="handleExportAll">
             <el-icon>
-              <Document />
+              <Files />
             </el-icon>
             全部数据导出
           </span>
@@ -91,10 +91,15 @@
       <el-table-column type="selection" reserve-selection width="50" />
       <el-table-column type="index" :index="getIndex" width="100" />
       <el-table-column label="快递单信息" header-align="center">
-        <el-table-column prop="型号1" label="产品型号" />
-        <el-table-column prop="型号2" label="产品名称" />
-        <el-table-column prop="生产批号" label="生产批号" />
+        <el-table-column prop="型号1" label="型号1" />
+        <el-table-column prop="型号2" label="型号2" />
+        <el-table-column prop="标识" label="标识" />
+        <el-table-column prop="版号" label="版号" />
+        <el-table-column prop="片号" label="片号" />
         <el-table-column prop="检验批号" label="检验批号" />
+        <el-table-column prop="生产批号" label="生产批号" />
+        <el-table-column prop="备注" label="备注" />
+        <el-table-column prop="目检合格数" label="目检合格数" />
       </el-table-column>
       <el-table-column label="快递单状态" header-align="center">
         <el-table-column prop="筛选单状态" label="筛选单状态" :filters="[
@@ -125,12 +130,12 @@
   </el-card>
 
   <!-- 项目添加对话框、项目编辑对话框 -->
-  <AddItem :addDialog="Dialog.addDialog" @closeDialog="handleCloseAddDialog" @addData="updateData" />
+  <AddItem :addDialog="Dialog.addDialog" @closeDialog="handleCloseAddDialog" @addData="addData" />
   <EditItem :data="selectedData" :editDialog="Dialog.editDialog" @closeDialog="handleCloseEditDialog"
     @updateData="updateData" />
   <ExcelSubmit :excelDialog="Dialog.excelDialog" @closeDialog="handleCloseExcelDialog" />
   <PicSubmit :picDialog="Dialog.picDialog" @closeDialog="handleClosePicDialog" />
-  <CameraSubmit :cameraDialog="Dialog.cameraDialog" @closeDialog="handleCloseCameraDialog" />
+  <CameraSubmit :cameraDialog="Dialog.cameraDialog" @closeDialog="handleCloseCameraDialog" @addData="addData" />
 </template>
 
 <script lang="ts" setup>
@@ -141,7 +146,7 @@ import EditItem from './hooks/EditItem.vue';
 import ExcelSubmit from './hooks/ExcelSubmit.vue';
 import PicSubmit from './hooks/PicSubmit.vue';
 import CameraSubmit from './hooks/CameraSubmit.vue';
-import { EditPen, FolderOpened, VideoCamera, Edit, Delete, Document } from '@element-plus/icons-vue';
+import { EditPen, FolderOpened, PictureFilled, VideoCamera, Edit, Delete, Document, Files } from '@element-plus/icons-vue';
 import http from '@/services/http';
 import type { FormData } from '@/types/index'
 
@@ -168,8 +173,18 @@ const handleCloseCameraDialog = () => {
 const handleCloseAddDialog = () => {
   Dialog.addDialog = false;
 }
-const updateData = () => {
+const addData = () => {
   getData();
+}
+const updateData = (formData: FormData) => {
+  // 找到指定 id 的数据并更新
+  const index = data.value.findIndex(item => item.id === formData.id);
+  if (index !== -1) {
+    // 这里必须使用解构赋值来触发响应性，不然的话data无法监听到，因为只是引用变了，值没变(错误）)
+    // data.value[index] = { ...formData };
+    // 引用地址变了就会触发响应性，所以这里可以直接赋值
+    data.value[index] = formData;
+  }
 }
 
 // 表格数据管理
@@ -375,6 +390,12 @@ watch([currentPage, pageSize], () => {
 </script>
 
 <style scoped>
+.box-card {
+  margin: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -383,5 +404,9 @@ watch([currentPage, pageSize], () => {
 
 :deep(.el-tabs__item) {
   color: #409eff;
+}
+
+:deep(.el-pagination__editor.el-input) {
+  width: 66px;
 }
 </style>

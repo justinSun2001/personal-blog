@@ -29,3 +29,4 @@ dist-ssr
 /backend/src/.env
 /backend/src/public/photos
 /backend/src/public/keys/.pem
+/backend/email.ts

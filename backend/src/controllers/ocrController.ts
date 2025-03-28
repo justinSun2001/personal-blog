@@ -4,6 +4,23 @@ import fs from "fs";
 import path from "path";
 import { promisify } from "util";
 const unlinkAsync = promisify(fs.unlink);
+import multer from "multer";
+import { spawn } from "child_process";
+import config from "../config.json";
+const osType = process.platform; // 获取操作系统类型
+
+function getPythonPath() {
+  const pathMap = {
+    win32: config.pythonPath.win32,
+    linux: config.pythonPath.linux,
+    darwin: config.pythonPath.darwin,
+  };
+  // 只处理已知的平台
+  if (osType in pathMap) {
+    return pathMap[osType as keyof typeof pathMap];
+  }
+  return "python"; // 默认回退到系统环境变量
+}
 
 export const count = async (
   req: Request,
@@ -285,5 +302,265 @@ export const exportAll = async (
   } catch (err) {
     next(err);
     console.error("传输错误:", err);
+  }
+};
+
+// Multer 配置
+const storage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    const dir = path.join(__dirname, "../public/ocr");
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true }); // 递归创建目录
+    }
+    cb(null, dir);
+  },
+  filename: function (_req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage });
+interface IOCRResult {
+  data: any; // 根据实际数据结构细化类型
+  filename: string;
+  time: number; // 对应 Python 返回的 all_time 字段
+}
+async function runPythonScript(
+  pythonPath: string,
+  imgPath: string
+): Promise<IOCRResult> {
+  return new Promise<IOCRResult>((resolve, reject) => {
+    const scriptPath = path.join(__dirname, "../py/my_paddle.py");
+    const pythonProcess = spawn(pythonPath, [scriptPath, imgPath]);
+    let outputData = "";
+    let errorData = "";
+    // 2. 捕获标准输出（JSON 结果）
+    pythonProcess.stdout.on("data", (data) => {
+      outputData += data.toString();
+    });
+    // 3. 捕获错误输出
+    pythonProcess.stderr.on("data", (data) => {
+      errorData += data.toString();
+    });
+    // 4. 处理进程结束
+    pythonProcess.on("close", (code) => {
+      if (code !== 0 || errorData) {
+        return reject(new Error(`Python 错误: ${errorData || "非零退出码"}`));
+      }
+      try {
+        const result = JSON.parse(outputData);
+        if (result.error) reject(new Error(result.error));
+        // 返回结构化的 OCR 数据 + 生成图片路径
+        resolve({
+          data: result.data,
+          filename: result.filename,
+          time: result.time,
+        });
+      } catch (e) {
+        reject(new Error("解析 JSON 失败"));
+      }
+    });
+  });
+}
+
+// 上传图片
+export const uploadPic = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  upload.single("pic")(req, res, (err: any) => {
+    if (!req.file) {
+      return res.status(400).json({ code: 400, message: "未选择文件" });
+    }
+
+    const imgPath = path.join(__dirname, "../public/ocr/" + req.file.filename);
+    runPythonScript(getPythonPath(), imgPath)
+      .then((result: IOCRResult) => {
+        const { data, filename, time } = result;
+        // 构造返回数据
+        const responseData = {
+          code: 200,
+          message: "上传成功",
+          data: {
+            url: `http://localhost:3000/ocr/${filename}`, // 访问路径
+            ocrData: data,
+            time: time,
+          },
+        };
+
+        res.json(responseData);
+        console.log("OCR 数据:", data);
+        console.log("生成图片:", filename);
+        console.log("总耗时:", time);
+      })
+      .catch((err) => {
+        console.error("失败:", err);
+        res
+          .status(500)
+          .json({ code: 500, message: "识别失败", error: err.message });
+      });
+  });
+};
+
+// 类型定义
+interface ExcelRow {
+  [header: string]: string | number | boolean | Date | null;
+}
+
+interface SheetData {
+  sheetName: string;
+  sheetId: number;
+  data: ExcelRow[];
+}
+export const uploadExcel = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // 执行文件上传
+    await new Promise<void>((resolve, reject) => {
+      upload.single("excel")(req, res, (err: unknown) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    if (!req.file?.path) {
+      return res.status(400).json({ code: 400, message: "未选择文件" });
+    }
+
+    // 初始化工作簿
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(req.file.path);
+
+    // 处理第一个工作表
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new Error("Excel文件中没有工作表");
+    }
+
+    const result: SheetData[] = [];
+    const sheetData: ExcelRow[] = [];
+
+    // 获取表头（假设第一行为表头）
+    const headerRow = worksheet.getRow(1);
+    const headerValues = headerRow.values || []; // 处理null值
+    const headers = (headerValues as ExcelJS.CellValue[]).slice(1).map(String); // 显式类型转换
+    // 处理数据行
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // 跳过表头
+
+      const rowData: ExcelRow = {};
+      row.eachCell((cell, colNumber) => {
+        const header = headers[colNumber - 1] || `column_${colNumber}`;
+        rowData[header] = getCellValue(cell);
+      });
+      sheetData.push(rowData);
+    });
+
+    result.push({
+      sheetName: worksheet.name,
+      sheetId: worksheet.id,
+      data: sheetData,
+    });
+
+    // 清理临时文件
+    await unlinkAsync(req.file.path);
+    res.status(200).json({
+      code: 200,
+      message: "文件解析成功",
+      data: result,
+    });
+  } catch (error) {
+    // 清理临时文件（如果存在）
+    if (req.file?.path) {
+      await unlinkAsync(req.file.path);
+    }
+
+    const errorMessage = error instanceof Error ? error.message : "未知错误";
+    res.status(500).json({
+      code: 500,
+      message: "文件处理失败",
+      error: errorMessage,
+    });
+  }
+};
+
+// 处理单元格值类型
+function getCellValue(
+  cell: ExcelJS.Cell
+): string | number | boolean | Date | null {
+  if (!cell.value) return null;
+
+  switch (cell.type) {
+    case ExcelJS.ValueType.Date:
+      return cell.value instanceof Date
+        ? cell.value
+        : new Date(cell.value.toString());
+    case ExcelJS.ValueType.Number:
+      return Number(cell.value);
+    case ExcelJS.ValueType.String:
+      return cell.text;
+    case ExcelJS.ValueType.Boolean:
+      return Boolean(cell.value);
+    default:
+      return cell.text;
+  }
+}
+
+// 上传多条数据
+export const addMultipleData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const mysqlPool = req.app.get("mysqlPool");
+  const dataArray = req.body; // 假设前端传递的是一个数组
+
+  try {
+    const sql = `
+      INSERT INTO product (日期, 型号1, 型号2, 标识, 版号, 片号, 检验批号, 生产批号, 备注, 目检合格数, 筛选单状态, 收费状态, 是否合检)
+      VALUES (CURRENT_DATE,?,?,?,?,?,?,?,?,?,?,?,?)
+    `;
+    let count = 0;
+    for (const data of dataArray) {
+      const {
+        型号1,
+        型号2,
+        标识,
+        版号,
+        片号,
+        检验批号,
+        生产批号,
+        备注,
+        目检合格数,
+        筛选单状态,
+        收费状态,
+        是否合检,
+      } = data;
+
+      const values = [
+        型号1,
+        型号2,
+        标识,
+        版号,
+        片号,
+        检验批号,
+        生产批号,
+        备注,
+        目检合格数,
+        筛选单状态,
+        收费状态,
+        是否合检,
+      ];
+
+      await mysqlPool.execute(sql, values);
+      count++;
+    }
+
+    res.status(201).json({ message: "数据添加成功", count });
+  } catch (err) {
+    next(err);
   }
 };

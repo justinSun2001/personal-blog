@@ -131,19 +131,19 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['submitData'])
-const formData = reactive<FormData>({ ...emptyForm })
+const formData = ref<FormData>({ ...emptyForm })
 // 监听props.data变化
-//todo: 这里更新后会出现闪烁的问题
 watch(
   () => props.data,
   (newVal) => {
+    console.log('props.data变化:', newVal);
     if (newVal) {
-      Object.assign(formData, newVal)
+      formData.value = props.data;
     } else {
-      Object.assign(formData, emptyForm)
+      formData.value = { ...emptyForm };
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
 
 const ruleFormRef = ref<FormInstance>()
@@ -165,7 +165,9 @@ const rules = reactive<FormRules<FormData>>({
 
 const handleSubmitForm = async (formEl: FormInstance | undefined) => {
   await submitForm(formEl);
-  formEl.resetFields();
+  if (!isEdit.value) {
+    formEl.resetFields();
+  }
 };
 
 // 计算当前是否为编辑模式
@@ -183,11 +185,11 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         await http({
           url,
           method: 'post',
-          data: formData,
+          data: formData.value,
           headers: { 'Content-Type': 'application/json' }
         });
         ElMessage.success(isEdit.value ? '数据更新成功' : '数据添加成功');
-        emit('submitData');
+        emit('submitData', formData.value);
       }
       catch {
         ElMessage.error(isEdit.value ? '数据更新失败' : '数据添加失败');

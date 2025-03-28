@@ -19,9 +19,9 @@ const closeDialog = () => {
   emit('closeDialog');
 };
 
-const submitData = () => {
+const submitData = (formData: FormData) => {
   emit('closeDialog');
-  emit('updateData');
+  emit('updateData', formData);
 }
 
 </script>
