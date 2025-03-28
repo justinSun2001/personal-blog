@@ -56,7 +56,7 @@ export const user_register = (
     .then((existingUser) => {
       if (existingUser) {
         // 如果 email 已存在，返回错误消息
-        return res.send({
+        return res.status(400).send({
           status: 400,
           data: { err: "邮箱已存在", success: false },
         });
@@ -66,7 +66,7 @@ export const user_register = (
       return User.findOne({ username }).then((existingUserByUsername) => {
         if (existingUserByUsername) {
           // 如果 username 已存在，返回错误消息
-          return res.send({
+          return res.status(400).send({
             status: 400,
             data: { err: "用户名已存在", success: false },
           });
@@ -78,7 +78,7 @@ export const user_register = (
         };
 
         if (!storedData) {
-          res.send({
+          return res.status(400).send({
             status: 400,
             data: { err: "验证码不存在或已过期", success: false },
           });
@@ -88,7 +88,7 @@ export const user_register = (
         if (Date.now() > storedData.expireAt) {
           // 验证码过期，删除存储的验证码
           codeStorage.delete(email);
-          res.send({
+          return res.status(400).send({
             status: 400,
             data: { err: "验证码已过期", success: false },
           });
@@ -96,7 +96,7 @@ export const user_register = (
 
         // 3. 检查验证码是否匹配
         if (storedData.code.toLowerCase() !== code.toLowerCase()) {
-          res.send({
+          return res.status(400).send({
             status: 400,
             data: { err: "验证码不匹配", success: false },
           });
@@ -233,29 +233,38 @@ export const get_code = (req: Request, res: Response, next: NextFunction) => {
       status: 400,
     });
   }
-
-  // 生成验证码
-  const code = generateCode();
-  const expireAt = Date.now() + 5 * 60 * 1000; // 设置验证码 5 分钟后过期
-
-  // 存储验证码到 Map 中
-  codeStorage.set(email, { code, expireAt });
-
-  // 发送验证码邮件
-  send(email, code)
-    .then(() => {
-      res.send({
-        data: { message: "验证码已发送", success: true },
-        err: null,
-        status: 200,
+  User.findOne({ email }).then((existingUser) => {
+    if (existingUser) {
+      // 如果 email 已存在，返回错误消息
+      return res.status(400).send({
+        status: 400,
+        data: { err: "邮箱已存在", success: false },
       });
-    })
-    .catch((err) => {
-      console.error("Error sending email:", err);
-      res.status(500).send({
-        data: { success: false },
-        err: "发送验证码失败",
-        status: 500,
-      });
-    });
+    } else {
+      // 生成验证码
+      const code = generateCode();
+      const expireAt = Date.now() + 5 * 60 * 1000; // 设置验证码 5 分钟后过期
+
+      // 存储验证码到 Map 中
+      codeStorage.set(email, { code, expireAt });
+
+      // 发送验证码邮件
+      send(email, code)
+        .then(() => {
+          res.send({
+            data: { message: "验证码已发送", success: true },
+            err: null,
+            status: 200,
+          });
+        })
+        .catch((err: unknown) => {
+          console.error("Error sending email:", err);
+          res.status(500).send({
+            data: { success: false },
+            err: "发送验证码失败",
+            status: 500,
+          });
+        });
+    }
+  });
 };

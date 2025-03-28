@@ -112,24 +112,32 @@ export default defineComponent({
         const response: AxiosResponse = await getCode({ email: ruleForm.email });  // 发送登录请求
         if (response.data.success == true) {
           ElMessage.success(response.data.message);
+        } else {
+          ElMessage.error(response.data.err);
         }
       }
-      catch {
-        ElMessage.error('发送验证码失败');
+      catch (err) {
+        ElMessage.error(err.response.data.data.err);
       }
     }
     const onFinish = async (values: RegisterForm) => {
-      const encrypted = await encryptParam(values);  // 加密参数
-      const response: AxiosResponse = await register({ encrypted, code: ruleForm.code });  // 发送登录请求
-      const data = response.data;
-      if (data.success == false) {
-        ElMessage.error(data.err);
-        return;
-      } else if (data.success == true) {
-        ElMessage.success(data.message);
-        localStorage.setItem('user', values.email); // 保存用户登录名称
-        emit('changeActive');
+      try {
+        const encrypted = await encryptParam(values);  // 加密参数
+        const response: AxiosResponse = await register({ encrypted, code: ruleForm.code });  // 发送登录请求
+        const data = response.data;
+        if (data.success == false) {
+          ElMessage.error(data.err);
+          return;
+        } else if (data.success == true) {
+          ElMessage.success(data.message);
+          localStorage.setItem('user', values.email); // 保存用户登录名称
+          emit('changeActive');
+        }
       }
+      catch (err) {
+        ElMessage.error(err.response.data.data.err);
+      }
+
     }
     const submitForm = (formEl: FormInstance | undefined) => {
       if (!formEl) return
