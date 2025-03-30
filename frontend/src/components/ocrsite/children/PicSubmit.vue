@@ -21,11 +21,6 @@
                   <ZoomIn />
                 </el-icon>
               </div>
-              <div class="delete-mask" @click.stop="handleDelete">
-                <el-icon :size="24" color="#fff">
-                  <Delete />
-                </el-icon>
-              </div>
             </div>
             <el-icon v-else class="avatar-uploader-icon">
               <Plus />
@@ -37,11 +32,6 @@
             <div class="preview-mask" @click.stop="dialogVisible2 = true">
               <el-icon :size="24" color="#fff">
                 <ZoomIn />
-              </el-icon>
-            </div>
-            <div class="delete-mask" @click.stop="resUrl = ''">
-              <el-icon :size="24" color="#fff">
-                <Delete />
               </el-icon>
             </div>
           </div>
@@ -62,14 +52,24 @@
 
 <script lang="ts" setup>
 import { ref, onBeforeUnmount } from 'vue';
-import FormItem from './FormItem.vue';
-import type { FormData } from '@/types/index'
+import FormItem from './childeren/FormItem.vue';
+import type { FormData, picResponseType } from '@/types/index'
+const loading = ref(false)
+const data = ref<FormData | null>(null);
+const { picDialog } = defineProps(['picDialog'])
+const emit = defineEmits(['closeDialog', 'addData']);
+const closeDialog = () => {
+  emit('closeDialog');
+};
+const submitData = () => {
+  emit('closeDialog');
+  emit('addData');
+}
 
 import { ElMessage } from 'element-plus';
-import { Plus, Delete, ZoomIn } from '@element-plus/icons-vue'
-import type { UploadFile, UploadInstance } from 'element-plus'
-import http from '@/services/http';
-
+import { Plus, ZoomIn } from '@element-plus/icons-vue'
+import type { UploadFile, UploadInstance, UploadRequestOptions } from 'element-plus'
+import { uploadPic, beforeUpload } from '../hooks/uploadPic';
 // 响应式数据
 const uploadRef = ref<UploadInstance>()  // 上传组件引用
 const previewUrl = ref<string>('')       // 预览图地址
@@ -80,115 +80,60 @@ const dialogVisible2 = ref(false) // 控制对话框显示
 // 文件选择变化回调
 const handleFileChange = (file: UploadFile) => {
   if (!file.raw) return
-  // 生成预览图
   previewUrl.value = URL.createObjectURL(file.raw)
   selectedFile.value = file.raw
 }
-
-// 手动触发上传
-const handleManualUpload = () => {
-  if (!uploadRef.value || !selectedFile.value) return
-  // 手动提交上传
-  uploadRef.value.submit()
-}
-
-// 上传前校验
-const beforeUpload = (file: File) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt5M = file.size / 1024 / 1024 < 5
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
-    return false
-  }
-  if (!isLt5M) {
-    ElMessage.error('图片大小不能超过5MB!')
-    return false
-  }
-  return true
-}
-
-// 删除处理逻辑
-const handleDelete = () => {
-  // 清除预览
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value)
-    previewUrl.value = ''
-  }
-  // 清除文件选择
-  selectedFile.value = null
-  // 重置上传组件状态
-  uploadRef.value?.clearFiles()
-  data.value = null;
-}
-
 // 图片预览点击处理
 const handlePreview = () => {
   if (previewUrl.value) {
     dialogVisible1.value = true
   }
 }
-
 // 自定义上传逻辑
-const customUpload = async (options) => {
+const customUpload = async (options: UploadRequestOptions) => {
   try {
-    const formData = new FormData();
-    formData.append('pic', options.file); // 字段名需与后端一致
-    formData.append('type', options.file.type); // 字段名需与后端一致
+    if (!options.file) {
+      ElMessage.error('请选择文件');
+      return;
+    }
     loading.value = true;
-    // 发送Axios请求
-    const response = await http.post(
-      '/ocr/uploadPic',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      }
-    );
-    // 手动触发成功回调
-    if (options.onSuccess) {
-      loading.value = false;
-      handleSuccess(response);
-    }
-  } catch (error) {
-    // 手动触发失败回调
-    if (options.onError) {
-      options.onError(error);
-    }
-    ElMessage.error('上传失败: ' + error.message);
+    const response: picResponseType = await uploadPic(options.file);
+    loading.value = false;
+    handleSuccess(response);
+  } catch {
+    loading.value = false;
+    ElMessage.error('上传失败');
   }
 };
-
 // 上传成功回调
-const handleSuccess = (response) => {
+const handleSuccess = (response: picResponseType) => {
   if (response.code === 200) {
-    // 处理成功逻辑
     data.value = response.data.ocrData;
     resUrl.value = response.data.url;
+    uploadRef.value?.clearFiles();
+    selectedFile.value = null;
+    if (previewUrl.value) {
+      URL.revokeObjectURL(previewUrl.value)
+      previewUrl.value = ''
+    }
     ElMessage.success(response.message);
-    console.log('文件访问地址:', response.data.url);
   }
 };
-const loading = ref(false)
-const data = ref<FormData | null>(null);
-const { picDialog } = defineProps(['picDialog'])
-const emit = defineEmits(['closeDialog', 'addData']);
-const closeDialog = () => {
-  // 关闭对话框
-  emit('closeDialog');
-};
-const submitData = () => {
-  emit('closeDialog');
-  emit('addData');
+// 手动触发上传
+const handleManualUpload = () => {
+  if (!uploadRef.value || !selectedFile.value) {
+    ElMessage.error('请重新选择文件');
+  } else {
+    uploadRef.value.submit()
+  }
 }
-
-
 // 清理预览URL（防止内存泄漏）
 onBeforeUnmount(() => {
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value)
   }
 })
+
 </script>
 
 <style scoped>
@@ -220,28 +165,10 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.delete-mask {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 30px;
-  height: 30px;
-  background: rgba(255, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-
-.delete-mask:hover {
-  opacity: 0.8;
-}
-
 .preview-mask {
   position: absolute;
   top: 0;
-  right: 30px;
+  right: 0px;
   width: 30px;
   height: 30px;
   background: rgba(10, 38, 224, 0.6);

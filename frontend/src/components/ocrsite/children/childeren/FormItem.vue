@@ -138,7 +138,7 @@ watch(
   (newVal) => {
     console.log('props.data变化:', newVal);
     if (newVal) {
-      formData.value = props.data;
+      formData.value = props.data as FormData;
     } else {
       formData.value = { ...emptyForm };
     }
@@ -166,7 +166,7 @@ const rules = reactive<FormRules<FormData>>({
 const handleSubmitForm = async (formEl: FormInstance | undefined) => {
   await submitForm(formEl);
   if (!isEdit.value) {
-    formEl.resetFields();
+    formEl?.resetFields();
   }
 };
 
@@ -175,7 +175,7 @@ const isEdit = computed(() => !!props.data?.id) // 假设数据中有唯一标�
 
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
-  await formEl.validate(async (valid, fields) => {
+  await formEl.validate(async (valid) => {
     if (valid) {
       try {
         // 根据模式选择不同API
@@ -195,7 +195,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         ElMessage.error(isEdit.value ? '数据更新失败' : '数据添加失败');
       }
     } else {
-      ElMessage.error('请输入正确的信息', fields);
+      ElMessage.error('请输入正确的信息');
     }
   })
 };

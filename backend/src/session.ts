@@ -15,7 +15,7 @@ export const sessionA = session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    maxAge: 1000 * 60 * 60, // 1小时
+    maxAge: 1000 * 60 * 60 * 24, // 24小时
     secure: process.env.NODE_ENV === "production",
   },
   name: "justinsun.sid", // 自定义cookie名称

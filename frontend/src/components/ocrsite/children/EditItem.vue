@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import FormItem from './FormItem.vue';
+import FormItem from './childeren/FormItem.vue';
 
 const props = defineProps(['data', 'editDialog'])
 const emit = defineEmits(['closeDialog', 'updateData']);

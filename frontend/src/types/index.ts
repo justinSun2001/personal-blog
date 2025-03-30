@@ -70,3 +70,12 @@ export interface FormData {
   收费状态: string;
   是否合检: string;
 }
+export interface picResponseType {
+  code: number;
+  message: string;
+  data: {
+    url: string;
+    ocrData: FormData;
+    time: number;
+  };
+}

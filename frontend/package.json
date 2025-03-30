@@ -26,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/lodash": "^4.17.15",
+    "@types/streamsaver": "^2.0.5",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/compiler-dom": "^3.5.13",
     "@vue/tsconfig": "^0.7.0",

@@ -4,10 +4,11 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue';
-import { WebSocketService } from '@/services/websocket';
 import { ElNotification } from 'element-plus'
 import { useStore } from 'vuex';
 const store = useStore();
+
+import { WebSocketService } from '@/services/websocket';
 const websocketService = new WebSocketService();
 // 建立 WebSocket 连接
 onMounted(() => {

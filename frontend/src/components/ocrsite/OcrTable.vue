@@ -141,11 +141,11 @@
 <script lang="ts" setup>
 import { ref, computed, watch, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
-import AddItem from './hooks/AddItem.vue';
-import EditItem from './hooks/EditItem.vue';
-import ExcelSubmit from './hooks/ExcelSubmit.vue';
-import PicSubmit from './hooks/PicSubmit.vue';
-import CameraSubmit from './hooks/CameraSubmit.vue';
+import AddItem from './children/AddItem.vue';
+import EditItem from './children/EditItem.vue';
+import ExcelSubmit from './children/ExcelSubmit.vue';
+import PicSubmit from './children/PicSubmit.vue';
+import CameraSubmit from './children/CameraSubmit.vue';
 import { EditPen, FolderOpened, PictureFilled, VideoCamera, Edit, Delete, Document, Files } from '@element-plus/icons-vue';
 import http from '@/services/http';
 import type { FormData } from '@/types/index'
@@ -224,13 +224,13 @@ const handleEdit = (row: FormData) => {
 // 删除
 const handleDelete = async (ids: number[]) => {
   try {
-    const res = await http.post('/ocr/delete', {
+    const result: { message: string, deletedCount: string } = await http.post('/ocr/delete', {
       ids
     });
     // 过滤掉指定 id 的数据
-    data.value = data.value.filter(item => !ids.includes(item.id));
+    data.value = data.value.filter(item => !ids.includes(item.id as number));
     ElMessage({
-      message: `${res.message}: ${res.deletedCount} 条`,
+      message: `${result.message}: ${result.deletedCount} 条`,
       type: 'success',
     });
   } catch {
@@ -276,7 +276,7 @@ const handleTabClick = (name: string) => {
       break;
     case '删除':
       if (selection.value.length > 0) {
-        idsToDelete.value = selection.value.map(item => item.id);
+        idsToDelete.value = selection.value.map(item => item.id as number);
         handleDelete(idsToDelete.value);
       } else {
         ElMessage({
@@ -287,7 +287,7 @@ const handleTabClick = (name: string) => {
       break;
     case '导出':
       if (selection.value.length > 0) {
-        idsToExport.value = selection.value.map(item => item.id);
+        idsToExport.value = selection.value.map(item => item.id as number);
         handleExport(idsToExport.value);
       } else {
         ElMessage({
@@ -302,7 +302,7 @@ const handleTabClick = (name: string) => {
 const handleExport = async (ids: number[]) => {
   try {
     const start_time = Date.now();
-    const resData = await http.post('/ocr/export', {
+    const resData: Blob = await http.post('/ocr/export', {
       ids
     }, {
       responseType: 'blob'
@@ -328,7 +328,7 @@ const handleExport = async (ids: number[]) => {
   }
 };
 // 全部数据导出（流式）
-import { createWriteStream } from 'streamsaver';
+import createWriteStream from 'streamsaver';
 const handleExportAll = async () => {
   try {
     const start_time = performance.now();
@@ -336,12 +336,15 @@ const handleExportAll = async () => {
       method: 'get',
     });
     if (!response.ok) throw new Error('请求失败');
+    // 检查 response.body 是否为 null
+    if (response.body === null) {
+      throw new Error('响应体为空');
+    }
     // 使用 StreamSaver 创建可写流
     const fileStream = createWriteStream('export_data.xlsx');
     const writer = fileStream.getWriter();
     // 获取响应流并写入文件
     const reader = response.body.getReader();
-
     const pump = async () => {
       const { done, value } = await reader.read();
       if (done) {
@@ -351,7 +354,6 @@ const handleExportAll = async () => {
       await writer.write(value);
       pump(); // 递归调用保持流式处理
     };
-
     await pump();
     console.log(performance.now() - start_time);
   } catch {
