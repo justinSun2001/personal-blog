@@ -91,7 +91,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, watch, computed } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormData } from '@/types/index'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -131,20 +131,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['submitData'])
-const formData = ref<FormData>({ ...emptyForm })
-// 监听props.data变化
-watch(
-  () => props.data,
-  (newVal) => {
-    console.log('props.data变化:', newVal);
-    if (newVal) {
-      formData.value = props.data as FormData;
-    } else {
-      formData.value = { ...emptyForm };
-    }
-  },
-  { immediate: true }
-)
+const formData = computed(() => props.data ? props.data : emptyForm)
 
 const ruleFormRef = ref<FormInstance>()
 const rules = reactive<FormRules<FormData>>({

@@ -18,7 +18,3 @@ declare module 'markdown-it-anchor' {
   import markdownItAnchor from 'markdown-it-anchor/lib';
   export default markdownItAnchor;
 }
-declare module 'streamsaver' {
-  import streamsaver from 'streamsaver';
-  export default streamsaver;
-}

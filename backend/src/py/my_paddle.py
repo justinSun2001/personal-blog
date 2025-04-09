@@ -10,12 +10,14 @@ import logging
 
 
 def get_ocr_data(img_path):
-    # 屏蔽 PaddleOCR 日志
+    # 启动paddlocr 屏蔽 PaddleOCR 日志
     logging.getLogger('ppocr').setLevel(logging.ERROR)
     sys.stdout = open(os.devnull, 'w')
     ocr = PaddleOCR(ocr_version="PP-OCRv3", enable_mkldnn=False,
                     use_angle_cls=True, det_db_box_thresh=0.3)
     sys.stdout = sys.__stdout__
+
+    # 获取结果
     result = ocr.ocr(img_path, cls=True)
     image = Image.open(img_path).convert('RGB')
     boxes = [line[0] for line in result[0]]

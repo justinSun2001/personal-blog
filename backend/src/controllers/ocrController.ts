@@ -7,8 +7,9 @@ const unlinkAsync = promisify(fs.unlink);
 import multer from "multer";
 import { spawn } from "child_process";
 import config from "../config.json";
-const osType = process.platform; // 获取操作系统类型
 
+const osType = process.platform; // 获取操作系统类型
+// 获取不同系统下的python环境的路径
 function getPythonPath() {
   const pathMap = {
     win32: config.pythonPath.win32,
@@ -189,6 +190,7 @@ export const exportData = async (
     return res.status(400).json({ error: "ids 必须是一个非空数组" });
   }
   try {
+    const start_time = Date.now();
     // 构建 SQL 语句
     const placeholders = ids.map(() => "?").join(",");
     const sql = `SELECT * FROM product WHERE id IN (${placeholders})`;
@@ -205,8 +207,6 @@ export const exportData = async (
         "Content-Disposition",
         "attachment; filename=table_data.xlsx"
       );
-
-      const start_time = Date.now();
 
       const tempFilePath = `./${Date.now()}.xlsx`;
       const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
@@ -305,7 +305,7 @@ export const exportAll = async (
   }
 };
 
-// Multer 配置
+// Multer 配置（处理formdata类型里面的文件类型）
 const storage = multer.diskStorage({
   destination: function (_req, _file, cb) {
     const dir = path.join(__dirname, "../public/ocr");
@@ -319,11 +319,14 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+// ocr识别返回结果类型定义
 interface IOCRResult {
   data: any; // 根据实际数据结构细化类型
   filename: string;
   time: number; // 对应 Python 返回的 all_time 字段
 }
+// 调用python脚本执行，获取标准输出结果并返回
 async function runPythonScript(
   pythonPath: string,
   imgPath: string
@@ -359,20 +362,24 @@ async function runPythonScript(
         reject(new Error("解析 JSON 失败"));
       }
     });
+    pythonProcess.on("exit", (code) => {
+      console.log(`Python 进程退出，状态码: ${code}`);
+    });
   });
 }
 
-// 上传图片
+// 上传图片接口实现
 export const uploadPic = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const start = Date.now();
   upload.single("pic")(req, res, (err: any) => {
     if (!req.file) {
       return res.status(400).json({ code: 400, message: "未选择文件" });
     }
-
+    const middle = Date.now();
     const imgPath = path.join(__dirname, "../public/ocr/" + req.file.filename);
     runPythonScript(getPythonPath(), imgPath)
       .then((result: IOCRResult) => {
@@ -392,6 +399,9 @@ export const uploadPic = async (
         console.log("OCR 数据:", data);
         console.log("生成图片:", filename);
         console.log("总耗时:", time);
+        const end = Date.now();
+        console.log(middle - start);
+        console.log(end - start);
       })
       .catch((err) => {
         console.error("失败:", err);

@@ -20,6 +20,7 @@ import ocrRouter from "./routes/ocr";
 
 import { authenticateToken } from "./jwt";
 import { sessionA } from "./session";
+import { fileURLToPath } from "url";
 
 // 初始化 Express
 const app = express();
@@ -94,7 +95,24 @@ app.use(express.json()); // 解析 JSON 数据
 app.use(express.urlencoded({ extended: true })); // 解析表单数据
 app.use(cookieParser());
 // ✅ 4. 托管静态文件
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    setHeaders: (res, filePath) => {
+      // 获取文件所在的文件夹名
+      const folderName = path.basename(path.dirname(filePath));
+      // 获取文件名
+      const filename = path.basename(filePath);
+      if (folderName == "files") {
+        // 避免中文或特殊字符乱码
+        const encodedFileName = encodeURIComponent(filename);
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename*=UTF-8''${encodedFileName}`
+        );
+      }
+    },
+  })
+);
 
 // ✅ 5. 视图引擎（如果不需要可删除）
 app.set("views", path.join(__dirname, "views"));

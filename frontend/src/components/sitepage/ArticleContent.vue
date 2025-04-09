@@ -181,11 +181,7 @@ const handleTocScroll = (event: WheelEvent) => {
 
 onMounted(async () => {
   //动态加载CSS文件
-  import('@/assets/styles/markdown.css').then(() => {
-    console.log('CSS加载成功');
-  }).catch((err) => {
-    console.error('CSS加载失败', err);
-  });
+  await import('@/assets/styles/markdown.css')
   await fetchData();
   extractHeadings();
   document.querySelectorAll('pre code').forEach((el) => {

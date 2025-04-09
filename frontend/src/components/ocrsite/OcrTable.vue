@@ -1,6 +1,5 @@
 <template>
   <el-card class="box-card">
-
     <!-- 头部的标签 -->
     <el-tabs type="card">
       <el-tab-pane>
@@ -305,7 +304,8 @@ const handleExport = async (ids: number[]) => {
     const resData: Blob = await http.post('/ocr/export', {
       ids
     }, {
-      responseType: 'blob'
+      responseType: 'blob',
+      timeout: 100000
     });
     const blob = new Blob([resData]);
     const filename = 'export_data.xlsx';
@@ -315,7 +315,7 @@ const handleExport = async (ids: number[]) => {
     link.download = filename;
     link.click();
     window.URL.revokeObjectURL(url);
-    console.log(Date.now() - start_time);
+    console.log('部分导出时间', Date.now() - start_time);
     ElMessage({
       message: '导出成功',
       type: 'success',
@@ -328,20 +328,21 @@ const handleExport = async (ids: number[]) => {
   }
 };
 // 全部数据导出（流式）
-import createWriteStream from 'streamsaver';
+import streamSaver from "streamsaver"
 const handleExportAll = async () => {
   try {
     const start_time = performance.now();
     const response = await fetch('http://localhost:3000/ocr/exportAll', {
       method: 'get',
     });
+    // console.log('excel导出结果', response)
     if (!response.ok) throw new Error('请求失败');
     // 检查 response.body 是否为 null
     if (response.body === null) {
       throw new Error('响应体为空');
     }
     // 使用 StreamSaver 创建可写流
-    const fileStream = createWriteStream('export_data.xlsx');
+    const fileStream = streamSaver.createWriteStream('export_data.xlsx');
     const writer = fileStream.getWriter();
     // 获取响应流并写入文件
     const reader = response.body.getReader();
@@ -352,11 +353,12 @@ const handleExportAll = async () => {
         return;
       }
       await writer.write(value);
-      pump(); // 递归调用保持流式处理
+      await pump(); // 递归调用保持流式处理
     };
     await pump();
-    console.log(performance.now() - start_time);
-  } catch {
+    console.log('全部导出时间', performance.now() - start_time);
+  } catch (error) {
+    console.log('错误', error)
     ElMessage.error('导出失败')
   }
 };
