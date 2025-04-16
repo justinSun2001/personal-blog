@@ -28,6 +28,7 @@ dist-ssr
 
 /backend/src/.env
 /backend/src/public/photos
+/backend/src/public/ocr
 /backend/src/public/keys/.pem
 /backend/email.ts
 /backend/config.json

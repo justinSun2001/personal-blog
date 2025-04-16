@@ -20,8 +20,8 @@ const generateCode = (): string => {
   return code;
 };
 
-// 刷新token
-export const refresh_token = (
+// 无感刷新时返回的token
+export const refreshed_token = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -29,12 +29,9 @@ export const refresh_token = (
   const { email, username } = req.user as { email: string; username: string }; // 明确断言类型
   // 新token
   const token = generateToken(email ? { email } : { username });
-  // 新refreshToken
-  const refreshToken = generateReFreshToken(email ? { email } : { username });
   res.send({
     data: {
-      token,
-      refreshToken,
+      token
     },
     status: 200,
     success: true,

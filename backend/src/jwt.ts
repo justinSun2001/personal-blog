@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { getPrivateKeyPem } from "./public/keys"; // 假设这个文件已经使用了TypeScript
+import { getPubKeyPem, getPrivateKeyPem } from "./public/keys"; // 假设这个文件已经使用了TypeScript
 import { Request, Response, NextFunction } from "express";
 
 // 扩展 Request 类型，添加 user 属性
@@ -13,17 +13,19 @@ declare global {
   }
 }
 
+// 获取公钥
+const pubSecret: string = getPubKeyPem(); // 你的密钥
 // 获取私钥
-const secret: string = getPrivateKeyPem(); // 你的密钥
+const priSecret: string = getPrivateKeyPem(); // 你的密钥
 
 // 设置 token 过期时间
 const options: jwt.SignOptions = {
-  expiresIn: "30s", // 可以是数字（单位为秒）或字符串（如 '2 hours'、'1d' 等）
+  expiresIn: "15min", // 可以是数字（单位为秒）或字符串（如 '2 hours'、'1d' 等）
   algorithm: "RS256", // 使用 RS256 非对称加密进行签名
 };
 // 无感刷新token所以来的token
 const refreshOptions: jwt.SignOptions = {
-  expiresIn: "10d",
+  expiresIn: "2d",
   algorithm: "RS256",
 };
 
@@ -32,13 +34,13 @@ function generateToken(user: User): string {
   // Check if user has a 'username' or 'email' and create the payload accordingly
   const payload =
     "username" in user ? { username: user.username } : { email: user.email };
-  return jwt.sign(payload, secret, options);
+  return jwt.sign(payload, priSecret, options);
 }
 // 签发无感刷新使用的token
 function generateReFreshToken(user: User): string {
   const payload =
     "username" in user ? { username: user.username } : { email: user.email };
-  return jwt.sign(payload, secret, refreshOptions);
+  return jwt.sign(payload, priSecret, refreshOptions);
 }
 // 中间件，校验 token
 function authenticateToken(
@@ -55,7 +57,7 @@ function authenticateToken(
   if (authHeader) {
     const token = authHeader.split(" ")[1]; // 获取 Bearer 后面的 token 值
     try {
-      const decoded = jwt.verify(token, secret); // 使用密钥验证 Token
+      const decoded = jwt.verify(token, pubSecret, { algorithms: ["RS256"] }); // 使用密钥验证 Token
       req.user = decoded as User; // 将解码后的用户信息添加到 req 对象，以便后续路由使用
       next(); // 如果验证通过，继续执行下一个中间件或路由处理程序
     } catch (err) {
@@ -79,7 +81,7 @@ function authenticateRefreshToken(
 
     try {
       // 使用 refresh token 验证用户信息
-      const decoded = jwt.verify(refreshToken, secret); // 使用与 refresh token 相关的密钥进行验证
+      const decoded = jwt.verify(refreshToken, pubSecret, { algorithms: ["RS256"] }); // 使用与 refresh token 相关的密钥进行验证
       req.user = decoded as User; // 将解码后的用户信息保存到 req.user 上
       next(); // 验证通过后继续处理请求
     } catch (err) {

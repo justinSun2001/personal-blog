@@ -10,7 +10,7 @@ export const register = (data: object) => {
   return http.post('/user/register', data);
 };
 export const getRefreshToken = () => {
-  return http.get('/user/refreshToken');
+  return http.get('/user/refreshedToken');
 };
 export const getCode = (data: object) => {
   return http.post('/user/code', data);

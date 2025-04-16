@@ -84,9 +84,9 @@ http.interceptors.response.use(
       return Promise.reject(err);
     }
 
-    const needRefreshToken = err.response.status === 401 && err.config.url !== '/user/refreshToken';
+    const needRefreshToken = err.response.status === 401 && err.config.url !== '/user/refreshedToken';
+
     if (needRefreshToken) {
-      console.log('错误响应拦截111', err);
       return await silentTokenRefresh(err);
     }
 
@@ -111,7 +111,7 @@ http.interceptors.response.use(
 export default http;
 
 import { getRefreshToken } from './user.ts';
-import { setRefreshTokenInLocal, setTokenInLocal } from '@/common/keyAndToken.ts';
+import { setTokenInLocal } from '@/common/keyAndToken.ts';
 
 // 无感刷新token
 async function silentTokenRefresh(err: AxiosError) {
@@ -124,9 +124,15 @@ async function silentTokenRefresh(err: AxiosError) {
 
 // 开始刷新token
 async function startRefresh(config: InternalAxiosRequestConfig) {
-  await refreshToken();
-  tryWatingRequest();
-  return http(config); //该配置对应的请求第一次发现了token失效,直接重新发送
+  try {
+    await refreshToken();
+    tryWatingRequest();
+    return http(config); //该配置对应的请求第一次发现了token失效,直接重新发送
+  } catch (error) {
+    watingQueue.length = 0; // 清空队列，防止队列中请求被多次发送;
+    console.log('刷新token失败', error);
+    return Promise.reject(error);
+  }
 }
 
 // 正在刷新token,将当前请求存储
@@ -145,22 +151,32 @@ async function refreshToken() {
     const response = await getRefreshToken();
     // 检查响应的状态是否为成功（例如 200）
     if (response.status === 200) {
-      const { token, refreshToken } = response.data; // 从响应数据中提取 token 和 refreshToken
-      console.log('Refresh token successful');
-      // 保存 token 和 refreshToken
+      const { token } = response.data; // 从响应数据中提取新token
+      // 保存 token
       setTokenInLocal(token);
-      setRefreshTokenInLocal(refreshToken);
-    } else if (response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      router.push('/user');
+      return Promise.resolve();
     } else {
       // 如果状态码不是 200，处理异常或错误逻辑
-      console.error('Refresh token failed with status:', response.status);
+      return Promise.reject(new Error('Refresh token failed'));
     }
-  } catch (error) {
-    // 捕获任何错误，例如网络请求错误
-    console.error('Error refreshing token:', error);
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      // 类型保护：e 被收窄为 AxiosError 类型
+      const axiosError = e; // 明确类型为 AxiosError
+      // 检查 response 是否存在（因为可能存在无响应的错误，如网络断开）
+      if (axiosError.response) {
+        // 类型收窄：axiosError.response 为 AxiosResponse 类型
+        const response = axiosError.response;
+        if (response.status === 401) {
+          // TypeScript 知道 response.status 是 number 类型
+          // 长token失效重新登录
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          router.push('/user');
+        }
+      }
+    }
+    return Promise.reject(new Error('Refresh token failed'));
   } finally {
     // 无论如何，都结束刷新状态
     isRefreshTokening = false;
